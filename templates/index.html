@@ -2,21 +2,34 @@
 <html>
 <head>
     <title>BidMate</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>BidMate 🛒</h1>
 
-    <a href="/add">Add Item</a>
-    <a href="/signup">Signup</a>
-    <a href="/login">Login</a>
-    <hr>
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <div class="logo">BidMate</div>
+        <div>
+            <a href="/">Home</a>
+            <a href="/contact">Contact</a>
+            <a href="/login">Login</a>
+            <a href="/signup">Signup</a>
+        </div>
+    </div>
 
-    {% for item in items %}
+    <!-- LANDING CONTENT -->
+    <div class="landing">
+        <h1>Buy • Sell • Barter on Campus</h1>
         <p>
-            <strong>{{ item.title }}</strong> — ₹{{ item.price }}
+            BidMate is a student-only marketplace to auction, sell, and exchange
+            books, notes, gadgets, and hostel essentials — all inside your college.
         </p>
-    {% else %}
-        <p>No items yet.</p>
-    {% endfor %}
+
+        <div class="buttons">
+            <a href="/signup" class="btn-primary">Get Started</a>
+            <a href="/login" class="btn-outline">Login</a>
+        </div>
+    </div>
+
 </body>
 </html>
