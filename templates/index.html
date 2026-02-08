@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BidMate</title>
+</head>
+<body>
+    <h1>BidMate 🛒</h1>
+
+    <a href="/add">Add Item</a>
+    <hr>
+
+    {% for item in items %}
+        <p>
+            <strong>{{ item.title }}</strong> — ₹{{ item.price }}
+        </p>
+    {% else %}
+        <p>No items yet.</p>
+    {% endfor %}
+</body>
+</html>
