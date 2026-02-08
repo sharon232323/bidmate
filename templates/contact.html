@@ -1,15 +1,895 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Contact</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BidMate - Contact Us</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* CSS Variables & Global Reset (Maintained from previous design) */
+        :root {
+            --primary-blue: #1c7ed6; /* Main brand blue */
+            --cta-color: #ff5c47; /* Primary action/highlight color (Orange/Red) */
+            --text-dark: #333;
+            --text-light: #666;
+            --bg-light: #f4f7f8; /* Light background for sections */
+            --bg-hero-start: #baf5eb;
+            --bg-hero-end: #86e4d0;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --secondary-blue-light: #e0f6ff; /* Light blue for icons/buttons */
+            --border-color: #ddd;
+            --success-green: #2ecc71;
+            --footer-dark: #2c3e50;
+            --pro-seller-bg: var(--secondary-blue-light);
+            --pro-seller-border: var(--primary-blue);
+            --pro-seller-text: var(--text-dark);
+            --icon-circle-bg: #e0f6ff; /* New variable for icon circles */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font-family);
+        }
+
+        body {
+            line-height: 1.6;
+            color: var(--text-dark);
+            background-color: white;
+        }
+
+        /* Utility & Component Classes (Maintained) */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            transition: color 0.2s;
+        }
+
+        button, .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            text-align: center;
+            display: inline-block;
+            font-size: 0.9rem;
+            line-height: 1;
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-blue);
+            color: white;
+            border: 2px solid var(--primary-blue);
+        }
+        .btn-primary-outline {
+            background-color: transparent;
+            color: var(--primary-blue);
+            border: 2px solid var(--primary-blue);
+        }
+        .btn-cta {
+            background-color: var(--cta-color);
+            color: white;
+            border: 2px solid var(--cta-color);
+        }
+
+        button:hover, .btn:hover {
+            opacity: 0.95;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Header / Navbar (Maintained) */
+        .header {
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary-blue);
+            display: flex;
+            align-items: center;
+        }
+        .logo i {
+            font-size: 1.2em;
+            margin-right: 8px;
+            color: var(--primary-blue);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+        }
+
+        .nav-links a {
+            padding: 0.5rem 0;
+            border-bottom: 2px solid transparent;
+            font-weight: 500;
+            color: var(--text-light);
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-blue);
+        }
+
+        .nav-links a.active {
+            border-bottom: 2px solid var(--cta-color);
+            color: var(--cta-color);
+            font-weight: 600;
+        }
+
+        .auth-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-login-signup {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            color: var(--text-dark);
+            font-weight: 600;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            line-height: 1;
+        }
+        .btn-login-signup:hover {
+             transform: none;
+             opacity: 0.9;
+        }
+
+        .user-icon {
+            font-size: 1.5em;
+            color: var(--primary-blue);
+        }
+
+        /* Hero Section (Gradient Background) (Maintained) */
+        .hero {
+            background: linear-gradient(to right, var(--bg-hero-start), var(--bg-hero-end));
+            padding: 4rem 0 0;
+            border-radius: 0 0 10px 10px;
+            margin-bottom: 4rem;
+        }
+
+        .hero-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 2rem;
+            gap: 20px;
+        }
+
+        .hero-text {
+            max-width: 50%;
+        }
+
+        .hero-text h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--text-dark);
+            margin-bottom: 0.75rem;
+        }
+        
+        .hero-text p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            color: var(--text-light);
+            max-width: 90%;
+        }
+
+        .hero-actions button {
+            margin-right: 15px;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.9rem;
+            border-radius: 4px;
+        }
+        
+        .hero-image {
+            max-width: 50%;
+            position: relative;
+        }
+
+        .hero-image-placeholder {
+            width: 100%;
+            height: 300px;
+            /* Using a generic background to simulate the illustration */
+            background: linear-gradient(to bottom right, #f4f7f8, #e0f6ff);
+            opacity: 1;
+            border-radius: 8px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            /* Centering a simple graphic to represent the illustration */
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .hero-image-placeholder::before {
+             content: "";
+             /* Simple representation of the three people and laptop/guitar */
+             width: 80%;
+             height: 80%;
+             background: url('placeholder-illustration.svg'); /* Imagine this path exists */
+             background: linear-gradient(90deg, #6c5ce7 0%, #3498db 30%, #2ecc71 70%, #f6993f 100%);
+             border-radius: 8px 8px 0 0;
+             opacity: 0.7;
+             box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Helper Bar (Maintained) */
+        .helper-bar {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .helper-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 15px;
+            border: 2px solid var(--primary-blue);
+            border-radius: 20px;
+            background-color: transparent;
+            font-size: 0.9em;
+            color: var(--primary-blue);
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .helper-item:hover {
+            background-color: var(--primary-blue);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .helper-item i {
+            margin-right: 8px;
+            color: inherit;
+        }
+
+        .search-item {
+            flex-grow: 1;
+            max-width: 300px;
+        }
+
+        /* Main Content: Form and Quick Links */
+        .main-content {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        /* Left Column: Send a Message Form */
+        .message-form-container {
+            flex: 3;
+        }
+
+        .message-form-container h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text-dark);
+        }
+
+        .contact-form .form-group {
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .contact-form input[type="text"],
+        .contact-form textarea {
+            width: 100%;
+            padding: 12px 15px 12px 50px; /* Added left padding for icon */
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 1em;
+            color: var(--text-dark);
+            background-color: white;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        .contact-form textarea {
+            resize: none;
+            min-height: 120px;
+        }
+
+        .contact-form input:focus,
+        .contact-form textarea:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px var(--secondary-blue-light);
+            outline: none;
+        }
+        
+        /* Form Icons inside inputs */
+        .form-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            font-size: 1.1em;
+            pointer-events: none;
+        }
+        
+        .form-icon-message {
+            top: 20px;
+            transform: translateY(0);
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn-submit-message {
+            background-color: var(--primary-blue);
+            color: white;
+            padding: 10px 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 2px solid var(--primary-blue);
+        }
+
+        .btn-reset {
+            background-color: transparent;
+            color: var(--text-light);
+            border: 1px solid var(--border-color);
+            padding: 10px 20px;
+        }
+        .btn-reset:hover {
+            color: var(--text-dark);
+            border-color: var(--text-dark);
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Prefer Your Connect Directly section */
+        .direct-connect {
+            margin-top: 40px;
+        }
+
+        .direct-connect h2 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+        }
+
+        .contact-info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        .contact-info-item i {
+            color: var(--primary-blue);
+            margin-right: 15px;
+            font-size: 1.2em;
+            width: 20px;
+            text-align: center;
+        }
+
+        .contact-info-item a {
+            color: var(--text-light);
+        }
+        .contact-info-item a:hover {
+            color: var(--primary-blue);
+        }
+
+        /* Right Column: Quick Help & FAQs */
+        .quick-help-sidebar {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .faq-section {
+            background-color: var(--bg-light);
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .faq-section h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 15px;
+        }
+
+        /* Top FAQ section styling */
+        .top-faq-item {
+            display: flex;
+            align-items: center;
+            background-color: white;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+        
+        .top-faq-item i {
+            margin-right: 15px;
+            font-size: 1.3em;
+        }
+
+        .icon-row {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        .icon-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--icon-circle-bg);
+            color: var(--primary-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8em;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+        .icon-circle:hover {
+            transform: translateY(-2px);
+            color: var(--cta-color);
+        }
+
+        /* Bottom FAQ section styling */
+        .map-faq-item {
+            background-color: white;
+            padding: 15px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .map-faq-item a {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            color: var(--primary-blue);
+            margin-bottom: 10px;
+        }
+
+        .map-faq-item a i {
+            margin-right: 10px;
+        }
+
+        .map-placeholder {
+            width: 100%;
+            height: 150px;
+            background-color: #f7f3e8;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            /* Creating the simple building graphic as a placeholder */
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .map-placeholder .building {
+            width: 80%;
+            height: 80%;
+            background-color: #a76d49;
+            border-radius: 4px 4px 0 0;
+            position: relative;
+            box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .map-placeholder .building::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background-color: #795548;
+        }
+        .map-placeholder .building div {
+            width: 15%;
+            height: 20%;
+            background-color: #fff9c4;
+            margin: 5% 3%;
+            float: left;
+            border-radius: 2px;
+        }
+        .map-placeholder .building::after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+
+
+        /* Join BidMate Bar (Maintained) */
+        .join-bar {
+            background-color: var(--primary-blue);
+            color: white;
+            padding: 3rem 0;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        .join-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .join-content h2 {
+            color: white;
+            font-size: 1.7rem;
+            font-weight: 800;
+        }
+
+        .join-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .join-actions button {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            border-radius: 4px;
+            font-weight: 700;
+        }
+
+        .btn-signup-now {
+            background-color: var(--cta-color);
+            color: white;
+            border: 2px solid var(--cta-color);
+        }
+
+        .btn-outline-white {
+            background-color: white;
+            color: var(--primary-blue);
+            border: 2px solid white;
+        }
+
+        /* Footer (Maintained) */
+        .footer {
+            padding: 2rem 0;
+            background-color: var(--footer-dark);
+            color: #eee;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #44566c;
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .footer .logo {
+            color: white;
+            font-weight: 700;
+        }
+        .footer .logo i {
+            color: white;
+        }
+
+        .footer-links-group {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .footer-links-group a, .footer-bottom a {
+            color: #aaa;
+            transition: color 0.2s;
+        }
+        .footer-links-group a:hover, .footer-bottom a:hover {
+            color: white;
+        }
+
+        .social-media a {
+            margin-left: 1rem;
+            color: white;
+            font-size: 1.2rem;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        .social-media a:hover {
+            opacity: 1;
+        }
+
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+        
+        .footer-terms a {
+            margin-left: 1rem;
+        }
+
+        /* Responsiveness (Maintained) */
+        @media (max-width: 992px) {
+            .hero-content {
+                flex-direction: column;
+                text-align: center;
+                padding-bottom: 1rem;
+            }
+
+            .hero-text, .hero-image {
+                max-width: 100%;
+            }
+            
+            .hero-image {
+                order: -1;
+                margin-bottom: 2rem;
+            }
+
+            .main-content {
+                flex-direction: column;
+            }
+
+            .quick-help-sidebar {
+                order: -1;
+            }
+
+            .join-content {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-wrap: wrap;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .auth-actions {
+                margin-top: 10px;
+                width: 100%;
+                justify-content: space-around;
+            }
+
+            .helper-bar {
+                flex-wrap: wrap;
+            }
+
+            .helper-item {
+                flex: 1 1 45%;
+                justify-content: center;
+            }
+
+            .search-item {
+                flex: 1 1 100%;
+                max-width: 100%;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .footer-links-group {
+                width: 100%;
+                justify-content: space-between;
+                gap: 0;
+            }
+            
+            .footer-bottom {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: flex-start;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="auth-box">
-        <h2>Contact Us 📩</h2>
-        <p>Email: bidmate@college.com</p>
-        <p>Built with ❤️ by students</p>
-        <a href="/">Back to Home</a>
+
+    <header class="header">
+        <div class="container navbar">
+            <a href="#" class="logo">
+                <i class="fas fa-gem"></i>
+                BidMate
+            </a>
+            <nav class="nav-links">
+                <a href="index.html">Home</a>
+                <a href="category.html">Categories</a>
+                <a href="sells.html">Sell</a>
+                <a href="about.html">About</a>
+                <a href="contact.html" class="active">Contact</a>
+            </nav>
+            <div class="auth-actions">
+                <button class="btn-login-signup">Login/Signup</button>
+                <i class="fas fa-user-circle user-icon"></i>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container hero-content">
+                <div class="hero-text">
+                    <h1>Contact Us</h1>
+                    <p>We're here a help! Reach s-questions or feedback.</p>
+                    <div class="hero-actions">
+                        <button class="btn btn-primary-outline">Start Bidding</button>
+                        <button class="btn btn-cta">Sell Now</button>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <div class="hero-image-placeholder"></div>
+                </div>
+            </div>
+        </section>
+
+        <div class="container">
+            <div class="helper-bar">
+                <div class="helper-item"><i class="fas fa-shopping-cart"></i> Buy & Sell</div>
+                <div class="helper-item"><i class="fas fa-gavel"></i> Easy Bidding</div>
+                <div class="helper-item search-item"><i class="fas fa-search"></i> Quick Search <span style="font-size: 0.8em; margin-left: auto;">&#8942;</span></div>
+            </div>
+
+            <section class="main-content">
+                <div class="message-form-container">
+                    <div class="send-message-section">
+                        <h2>Send Us a Message</h2>
+                        <form class="contact-form" id="contactForm">
+                            <div class="form-group">
+                                <i class="fas fa-user form-icon"></i>
+                                <input type="text" placeholder="Name">
+                            </div>
+                            <div class="form-group">
+                                <i class="fas fa-envelope form-icon"></i>
+                                <input type="text" placeholder="Subject">
+                            </div>
+                            <div class="form-group">
+                                <i class="fas fa-bookmark form-icon"></i>
+                                <input type="text" placeholder="Subject">
+                            </div>
+                            <div class="form-group">
+                                <i class="fas fa-comment-dots form-icon form-icon-message"></i>
+                                <textarea placeholder="Message"></textarea>
+                            </div>
+
+                            <div class="form-actions">
+                                <button class="btn btn-submit-message" type="submit">
+                                    <i class="fas fa-paper-plane"></i> Submit Message
+                                </button>
+                                <button class="btn btn-reset" type="reset">
+                                    Reset
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="direct-connect">
+                        <h2>Prefer Your Connect Directly?</h2>
+                        <div class="contact-info-item">
+                            <i class="fas fa-envelope"></i>
+                            <p>Email: <a href="mailto:support@bidmate.edu">support@bidmate.edu</a></p>
+                        </div>
+                        <div class="contact-info-item">
+                            <i class="fas fa-phone"></i>
+                            <p>Phone: (123) 466-790)</p>
+                        </div>
+                        <div class="contact-info-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <p>Student Union Building, Room 205</p>
+                        </div>
+                    </div>
+                </div>
+
+                <aside class="quick-help-sidebar">
+                    <div class="faq-section">
+                        <h3>Quick Help & FAQs</h3>
+                        <div class="top-faq-item">
+                            <i class="fas fa-question-circle"></i>
+                            <p>How do list Hens?</p>
+                        </div>
+                        
+                        <div class="icon-row">
+                            <div class="icon-circle"><i class="fas fa-envelope"></i></div>
+                            <div class="icon-circle"><i class="fas fa-share-alt"></i></div>
+                            <div class="icon-circle"><i class="fas fa-trophy"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="faq-section">
+                        <h3>Quick Help & FAQs</h3>
+                        <div class="map-faq-item">
+                            <a href="#"><i class="fas fa-globe"></i> View All FAQs?</a>
+                            <div class="map-placeholder">
+                                <div class="building">
+                                    <div style="margin-top: 15%;"></div><div></div><div></div>
+                                    <div style="margin-left: 10%;"></div><div></div><div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </section>
+        </div>
+    </main>
+
+    <div class="join-bar">
+        <div class="container join-content">
+            <h2>Don't Miss Out! Join BiMate Today</h2>
+            <div class="join-actions">
+                <button class="btn btn-cta btn-signup-now">Signup Now</button>
+                <button class="btn btn-outline-white">Start Bidding</button>
+            </div>
+        </div>
     </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <a href="#" class="logo">
+                    <i class="fas fa-gem"></i>
+                    BidMate
+                </a>
+                <div class="footer-links-group">
+                    <a href="#">Quick Links</a>
+                    <a href="#">About Us</a>
+                    <a href="#">Support</a>
+                    <a href="#">Social Media</a>
+                </div>
+                <div class="social-media">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 20WMacy Policy</p>
+                <div class="footer-terms">
+                    <a href="#">Privacy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('contactForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            console.log('Contact form submission prevented for demo.');
+            // You would add AJAX or other submission logic here in a real application
+        });
+    </script>
 </body>
 </html>
