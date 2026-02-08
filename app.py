@@ -1,7 +1,22 @@
+import sqlite3
+
+def init_db():
+    conn = sqlite3.connect("bidmate.db")
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            price TEXT NOT NULL
+        )
+    """)
+    conn.commit()
+    conn.close()
 from flask import Flask, render_template, request, redirect
 import sqlite3
 
 app = Flask(__name__)
+init_db
 
 # ---------- DATABASE ----------
 def get_db_connection():
