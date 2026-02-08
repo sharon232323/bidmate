@@ -66,7 +66,9 @@ def add_item():
 
     return render_template("add_item.html")
 
-
+@app.route("/contact")
+def contact():
+    return render_template("contact.html")
 # -------------------------
 # App runner
 # -------------------------
