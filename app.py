@@ -1,93 +1,64 @@
-from flask import Flask, render_template, request, redirect, url_for, session
-import sqlite3
-import os
+from flask import Flask, render_template, request, redirect, url_for
 
 app = Flask(__name__)
-app.secret_key = "bidmate_secret_key"
 
-DB_NAME = "bidmate.db"
-
-def get_db():
-    return sqlite3.connect(DB_NAME)
-
-def init_db():
-    conn = get_db()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL
-    )
-    """)
-
-    conn.commit()
-    conn.close()
-
-init_db()
-
+# Home / Landing Page
 @app.route("/")
-def index():
+def home():
     return render_template("index.html")
 
-@app.route("/signup", methods=["GET", "POST"])
-def signup():
+# Contact Page
+@app.route("/contact", methods=["GET", "POST"])
+def contact():
     if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
+        name = request.form.get("name")
+        email = request.form.get("email")
+        message = request.form.get("message")
 
-        try:
-            conn = get_db()
-            cursor = conn.cursor()
-            cursor.execute(
-                "INSERT INTO users (username, password) VALUES (?, ?)",
-                (username, password)
-            )
-            conn.commit()
-            conn.close()
-            return redirect(url_for("login"))
-        except:
-            return "Username already exists!"
+        print("Contact Message:", name, email, message)
 
-    return render_template("signup.html")
+        return redirect(url_for("contact"))
 
+    return render_template("contact.html")
+
+# Login Page
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
+        email = request.form.get("email")
+        password = request.form.get("password")
 
-        conn = get_db()
-        cursor = conn.cursor()
-        cursor.execute(
-            "SELECT * FROM users WHERE username=? AND password=?",
-            (username, password)
-        )
-        user = cursor.fetchone()
-        conn.close()
-
-        if user:
-            session["user"] = username
-            return redirect(url_for("dashboard"))
-        else:
-            return "Invalid credentials!"
+        print("Login:", email, password)
+        return redirect(url_for("home"))
 
     return render_template("login.html")
 
-@app.route("/dashboard")
-def dashboard():
-    if "user" not in session:
-        return redirect(url_for("login"))
-    return render_template("dashboard.html", user=session["user"])
+# Signup Page
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    if request.method == "POST":
+        name = request.form.get("name")
+        email = request.form.get("email")
+        password = request.form.get("password")
 
-@app.route("/logout")
-def logout():
-    session.pop("user", None)
-    return redirect(url_for("index"))
-@app.route("/contact")
-def contact():
-    return render_template("contact.html")
+        print("Signup:", name, email)
+        return redirect(url_for("login"))
+
+    return render_template("signup.html")
+
+# Add Item / Sell Page
+@app.route("/add-item", methods=["GET", "POST"])
+def add_item():
+    if request.method == "POST":
+        title = request.form.get("title")
+        price = request.form.get("price")
+        description = request.form.get("description")
+
+        print("New Item:", title, price, description)
+
+        return redirect(url_for("home"))
+
+    return render_template("add_item.html")
 
 if __name__ == "__main__":
     app.run(debug=True)
