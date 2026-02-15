@@ -1,20 +1,50 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Add Item</title>
+    <title>Add Item | BidMate</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Add Item</h1>
 
-    <form method="post">
-        <input type="text" name="title" placeholder="Item title" required>
-        <br><br>
-        <input type="number" step="0.01" name="price" placeholder="Price" required>
-        <br><br>
-        <button type="submit">Add</button>
-    </form>
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <div class="logo">BidMate</div>
+        <div>
+            <a href="/">Home</a>
+            <a href="/contact">Contact</a>
+            <a href="/add-item">Sell</a>
+            <a href="/login">Login</a>
+        </div>
+    </div>
 
-    <br>
-    <a href="/">Back</a>
+    <!-- ADD ITEM FORM -->
+    <div class="add-container">
+        <div class="add-card">
+            <h2>List a New Item 🛍️</h2>
+
+            <form method="POST" enctype="multipart/form-data">
+                
+                <input type="text" name="title" placeholder="Item Title" required>
+
+                <input type="number" name="price" placeholder="Starting Price (₹)" required>
+
+                <select name="category" required>
+                    <option value="">Select Category</option>
+                    <option>Books</option>
+                    <option>Notes</option>
+                    <option>Electronics</option>
+                    <option>Hostel Items</option>
+                    <option>Other</option>
+                </select>
+
+                <textarea name="description" placeholder="Item Description" required></textarea>
+
+                <input type="file" name="image">
+
+                <button type="submit">Post Item 🚀</button>
+            </form>
+        </div>
+    </div>
+
 </body>
 </html>
