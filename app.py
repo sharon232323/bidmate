@@ -1,64 +1,73 @@
 from flask import Flask, render_template, request, redirect, url_for
+import sqlite3
 
 app = Flask(__name__)
 
-# Home / Landing Page
+DATABASE = "bidmate.db"
+
+# Initialize database
+def init_db():
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        price REAL NOT NULL,
+        category TEXT NOT NULL,
+        description TEXT NOT NULL
+    )
+    """)
+
+    conn.commit()
+    conn.close()
+
+init_db()
+
+# Home Page
 @app.route("/")
 def home():
-    return render_template("index.html")
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM items ORDER BY id DESC")
+    items = cursor.fetchall()
+    conn.close()
+    return render_template("index.html", items=items)
 
-# Contact Page
-@app.route("/contact", methods=["GET", "POST"])
-def contact():
-    if request.method == "POST":
-        name = request.form.get("name")
-        email = request.form.get("email")
-        message = request.form.get("message")
-
-        print("Contact Message:", name, email, message)
-
-        return redirect(url_for("contact"))
-
-    return render_template("contact.html")
-
-# Login Page
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        email = request.form.get("email")
-        password = request.form.get("password")
-
-        print("Login:", email, password)
-        return redirect(url_for("home"))
-
-    return render_template("login.html")
-
-# Signup Page
-@app.route("/signup", methods=["GET", "POST"])
-def signup():
-    if request.method == "POST":
-        name = request.form.get("name")
-        email = request.form.get("email")
-        password = request.form.get("password")
-
-        print("Signup:", name, email)
-        return redirect(url_for("login"))
-
-    return render_template("signup.html")
-
-# Add Item / Sell Page
+# Add Item
 @app.route("/add-item", methods=["GET", "POST"])
 def add_item():
     if request.method == "POST":
         title = request.form.get("title")
         price = request.form.get("price")
+        category = request.form.get("category")
         description = request.form.get("description")
 
-        print("New Item:", title, price, description)
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO items (title, price, category, description)
+            VALUES (?, ?, ?, ?)
+        """, (title, price, category, description))
+        conn.commit()
+        conn.close()
 
         return redirect(url_for("home"))
 
     return render_template("add_item.html")
+
+@app.route("/contact")
+def contact():
+    return render_template("contact.html")
+
+@app.route("/login")
+def login():
+    return render_template("login.html")
+
+@app.route("/signup")
+def signup():
+    return render_template("signup.html")
 
 if __name__ == "__main__":
     app.run(debug=True)

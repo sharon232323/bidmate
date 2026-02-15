@@ -6,31 +6,39 @@
 </head>
 <body>
 
-    <!-- NAVBAR -->
-    <div class="navbar">
-        <div class="logo">BidMate</div>
-        <div>
-            <a href="/">Home</a>
-            <a href="/contact">Contact</a>
-            <a href="/login">Login</a>
-            <a href="/signup">Signup</a>
-        </div>
+<div class="navbar">
+    <div class="logo">BidMate</div>
+    <div>
+        <a href="/">Home</a>
+        <a href="/contact">Contact</a>
+        <a href="/add-item">Sell</a>
+        <a href="/login">Login</a>
+        <a href="/signup">Signup</a>
     </div>
+</div>
 
-    <!-- LANDING CONTENT -->
-    <div class="landing">
-        <h1>Buy • Sell • Barter on Campus</h1>
-        <p>
-            BidMate is a student-only marketplace to auction, sell, and exchange
-            books, notes, gadgets, and hostel essentials — all inside your college.
-        </p>
-
-        <div class="buttons">
-            <a href="/signup" class="btn-primary">Get Started</a>
-            <a href="/login" class="btn-outline">Login</a>
-            <a href="/add-item">Sell</a>
-        </div>
+<div class="landing">
+    <h1>Buy • Sell • Barter on Campus</h1>
+    <p>Student-only marketplace for books, notes, gadgets & hostel essentials.</p>
+    <div class="buttons">
+        <a href="/add-item" class="btn-primary">Start Selling</a>
+        <a href="/signup" class="btn-outline">Join Now</a>
     </div>
+</div>
+
+<div class="items-section">
+    <h2>Latest Listings 🛍️</h2>
+    <div class="items-grid">
+        {% for item in items %}
+        <div class="item-card">
+            <h3>{{ item[1] }}</h3>
+            <p><strong>₹{{ item[2] }}</strong></p>
+            <p>{{ item[4] }}</p>
+            <span class="category">{{ item[3] }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
 
 </body>
 </html>
