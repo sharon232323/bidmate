@@ -1,42 +1,51 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>BidMate</title>
+    <title>BidMate - Home</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
+<!-- NAVBAR -->
 <div class="navbar">
     <div class="logo">BidMate</div>
-    <div>
+    <div class="nav-links">
         <a href="/">Home</a>
-        <a href="/contact">Contact</a>
         <a href="/add-item">Sell</a>
         <a href="/login">Login</a>
         <a href="/signup">Signup</a>
     </div>
 </div>
 
-<div class="landing">
-    <h1>Buy • Sell • Barter on Campus</h1>
-    <p>Student-only marketplace for books, notes, gadgets & hostel essentials.</p>
-    <div class="buttons">
-        <a href="/add-item" class="btn-primary">Start Selling</a>
-        <a href="/signup" class="btn-outline">Join Now</a>
-    </div>
+<!-- HERO SECTION -->
+<div class="hero">
+    <h1>Discover. Bid. Win.</h1>
+    <p>Your modern marketplace for amazing deals.</p>
 </div>
 
-<div class="items-section">
-    <h2>Latest Listings 🛍️</h2>
-    <div class="items-grid">
+<!-- PRODUCT SECTION -->
+<div class="products-section">
+    <h2 class="section-title">🔥 Latest Listings</h2>
+
+    <div class="cards-container">
+
         {% for item in items %}
-        <div class="item-card">
-            <h3>{{ item[1] }}</h3>
-            <p><strong>₹{{ item[2] }}</strong></p>
-            <p>{{ item[4] }}</p>
-            <span class="category">{{ item[3] }}</span>
-        </div>
+        <a href="/item/{{ item[0] }}" class="card-link">
+            <div class="item-card">
+                <div class="card-image">
+                    📦
+                </div>
+
+                <div class="card-content">
+                    <h3>{{ item[1] }}</h3>
+                    <p class="price">₹{{ item[2] }}</p>
+                    <p class="desc">{{ item[4][:80] }}...</p>
+                    <span class="category">{{ item[3] }}</span>
+                </div>
+            </div>
+        </a>
         {% endfor %}
+
     </div>
 </div>
 

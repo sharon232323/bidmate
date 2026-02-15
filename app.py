@@ -78,6 +78,21 @@ def signup():
 
     return render_template("signup.html")
 
+@app.route("/item/<int:item_id>")
+def item_detail(item_id):
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM items WHERE id = ?", (item_id,))
+    item = cursor.fetchone()
+
+    conn.close()
+
+    if item is None:
+        return "Item not found"
+
+    return render_template("item_detail.html", item=item)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
