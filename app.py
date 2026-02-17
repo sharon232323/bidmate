@@ -1,23 +1,31 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect
 import sqlite3
 
 app = Flask(__name__)
+DATABASE = "items.db"
 
-DATABASE = "bidmate.db"
-
-# Initialize database
+# ---------- DATABASE INIT ----------
 def init_db():
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
 
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS items (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT NOT NULL,
-        price REAL NOT NULL,
-        category TEXT NOT NULL,
-        description TEXT NOT NULL
-    )
+        CREATE TABLE IF NOT EXISTS items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            price TEXT NOT NULL,
+            category TEXT NOT NULL,
+            description TEXT NOT NULL
+        )
+    """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            email TEXT NOT NULL,
+            password TEXT NOT NULL
+        )
     """)
 
     conn.commit()
@@ -25,62 +33,48 @@ def init_db():
 
 init_db()
 
-# Home Page
+# ---------- HOME ----------
 @app.route("/")
 def home():
     conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
+
     cursor.execute("SELECT * FROM items ORDER BY id DESC")
     items = cursor.fetchall()
+
     conn.close()
     return render_template("index.html", items=items)
 
-# Add Item
+# ---------- ADD ITEM ----------
 @app.route("/add-item", methods=["GET", "POST"])
 def add_item():
     if request.method == "POST":
-        title = request.form.get("title")
-        price = request.form.get("price")
-        category = request.form.get("category")
-        description = request.form.get("description")
+        name = request.form["name"]
+        price = request.form["price"]
+        category = request.form["category"]
+        description = request.form["description"]
 
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
+
         cursor.execute("""
-            INSERT INTO items (title, price, category, description)
+            INSERT INTO items (name, price, category, description)
             VALUES (?, ?, ?, ?)
-        """, (title, price, category, description))
+        """, (name, price, category, description))
+
         conn.commit()
         conn.close()
 
-        return redirect(url_for("home"))
+        return redirect("/")
 
     return render_template("add_item.html")
 
-@app.route("/contact")
-def contact():
-    return render_template("contact.html")
-
-@app.route("/login")
-def login():
-    return render_template("login.html")
-
-@app.route("/signup", methods=["GET", "POST"])
-def signup():
-    if request.method == "POST":
-        name = request.form.get("name")
-        email = request.form.get("email")
-        password = request.form.get("password")
-
-        print("Signup:", name, email)
-
-        return redirect(url_for("home"))
-
-    return render_template("signup.html")
-
+# ---------- PRODUCT DETAIL ----------
 @app.route("/item/<int:item_id>")
 def item_detail(item_id):
     conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
     cursor.execute("SELECT * FROM items WHERE id = ?", (item_id,))
@@ -93,6 +87,53 @@ def item_detail(item_id):
 
     return render_template("item_detail.html", item=item)
 
+# ---------- SIGNUP ----------
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    if request.method == "POST":
+        username = request.form["username"]
+        email = request.form["email"]
+        password = request.form["password"]
+
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO users (username, email, password)
+            VALUES (?, ?, ?)
+        """, (username, email, password))
+
+        conn.commit()
+        conn.close()
+
+        return redirect("/login")
+
+    return render_template("signup.html")
+
+# ---------- LOGIN ----------
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        email = request.form["email"]
+        password = request.form["password"]
+
+        conn = sqlite3.connect(DATABASE)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT * FROM users WHERE email = ? AND password = ?
+        """, (email, password))
+
+        user = cursor.fetchone()
+        conn.close()
+
+        if user:
+            return redirect("/")
+        else:
+            return "Invalid credentials"
+
+    return render_template("login.html")
 
 if __name__ == "__main__":
     app.run(debug=True)
