@@ -1,18 +1,14 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Contact</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
+{% extends "base.html" %}
+{% block content %}
 
 <div class="form-container">
     <h2>Contact Us</h2>
-    <input type="text" placeholder="Your Name">
-    <input type="email" placeholder="Your Email">
-    <textarea placeholder="Message"></textarea>
-    <button>Send Message</button>
+    <form>
+        <input type="text" placeholder="Your Name">
+        <input type="email" placeholder="Your Email">
+        <textarea placeholder="Your Message"></textarea>
+        <button type="submit">Send Message</button>
+    </form>
 </div>
 
-</body>
-</html>
+{% endblock %}

@@ -1,40 +1,27 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Home</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-
-<div class="navbar">
-    <h2>BidMate</h2>
-    <div>
-        <a href="/">Home</a>
-        <a href="/add">Add Item</a>
-        <a href="/contact">Contact</a>
-        <a href="/login">Login</a>
-        <a href="/signup">Signup</a>
-    </div>
-</div>
+{% extends "base.html" %}
+{% block content %}
 
 <div class="hero">
-    <h1>Welcome to BidMate</h1>
-    <p>Buy & Sell Amazing Products</p>
+    <div>
+        <h1>Buy Smart. Sell Smart. Bid Better.</h1>
+        <p>India's First Student Auction + Barter Marketplace</p>
+        <div class="hero-buttons">
+            <a href="/add_item" class="primary-btn">Sell Item</a>
+        </div>
+    </div>
 </div>
 
 <div class="products">
     {% for item in items %}
     <div class="card">
-        <a href="/item/{{ item['id'] }}">
-            <img src="{{ item['image'] }}">
-        </a>
+        <img src="{{ url_for('static', filename='uploads/' + item['image']) }}">
         <div class="card-content">
             <h3>{{ item['name'] }}</h3>
-            <p class="price">₹ {{ item['price'] }}</p>
+            <div class="price">₹ {{ item['price'] }}</div>
+            <a href="/item/{{ item['id'] }}">View</a>
         </div>
     </div>
     {% endfor %}
 </div>
 
-</body>
-</html>
+{% endblock %}

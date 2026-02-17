@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div style="padding:60px;">
+    <h2>My Barter Offers</h2>
+
+    <div class="products">
+        {% for offer in offers %}
+        <div class="card">
+            <div class="card-content">
+                <h3>On Item: {{ offer['item_name'] }}</h3>
+                <p>Your Offer: {{ offer['offered_item'] }}</p>
+                <p>Status: <strong>{{ offer['status'] }}</strong></p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}
