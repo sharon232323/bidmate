@@ -1,25 +1,27 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, url_for
 import sqlite3
 
 app = Flask(__name__)
-DATABASE = "items.db"
 
-# ---------- DATABASE INIT ----------
+# ---------- DATABASE CONNECTION ----------
+def get_db_connection():
+    conn = sqlite3.connect("database.db")
+    conn.row_factory = sqlite3.Row
+    return conn
+
+# ---------- CREATE TABLES ----------
 def init_db():
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
-
-    cursor.execute("""
+    conn = get_db_connection()
+    conn.execute("""
         CREATE TABLE IF NOT EXISTS items (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             price TEXT NOT NULL,
-            category TEXT NOT NULL,
+            image TEXT NOT NULL,
             description TEXT NOT NULL
         )
     """)
-
-    cursor.execute("""
+    conn.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL,
@@ -27,67 +29,55 @@ def init_db():
             password TEXT NOT NULL
         )
     """)
-
     conn.commit()
     conn.close()
 
 init_db()
 
-# ---------- HOME ----------
+# ---------- ROUTES ----------
+
 @app.route("/")
 def home():
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM items ORDER BY id DESC")
-    items = cursor.fetchall()
-
+    conn = get_db_connection()
+    items = conn.execute("SELECT * FROM items").fetchall()
     conn.close()
     return render_template("index.html", items=items)
 
-# ---------- ADD ITEM ----------
-@app.route("/add-item", methods=["GET", "POST"])
+
+@app.route("/add", methods=["GET", "POST"])
 def add_item():
     if request.method == "POST":
         name = request.form["name"]
         price = request.form["price"]
-        category = request.form["category"]
+        image = request.form["image"]
         description = request.form["description"]
 
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-
-        cursor.execute("""
-            INSERT INTO items (name, price, category, description)
-            VALUES (?, ?, ?, ?)
-        """, (name, price, category, description))
-
+        conn = get_db_connection()
+        conn.execute(
+            "INSERT INTO items (name, price, image, description) VALUES (?, ?, ?, ?)",
+            (name, price, image, description)
+        )
         conn.commit()
         conn.close()
 
-        return redirect("/")
+        return redirect(url_for("home"))
 
     return render_template("add_item.html")
 
-# ---------- PRODUCT DETAIL ----------
+
 @app.route("/item/<int:item_id>")
 def item_detail(item_id):
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM items WHERE id = ?", (item_id,))
-    item = cursor.fetchone()
-
+    conn = get_db_connection()
+    item = conn.execute("SELECT * FROM items WHERE id = ?", (item_id,)).fetchone()
     conn.close()
-
-    if item is None:
-        return "Item not found"
-
     return render_template("item_detail.html", item=item)
 
-# ---------- SIGNUP ----------
+
+@app.route("/contact")
+def contact():
+    return render_template("contact.html")
+
+
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
@@ -95,45 +85,39 @@ def signup():
         email = request.form["email"]
         password = request.form["password"]
 
-        conn = sqlite3.connect(DATABASE)
-        cursor = conn.cursor()
-
-        cursor.execute("""
-            INSERT INTO users (username, email, password)
-            VALUES (?, ?, ?)
-        """, (username, email, password))
-
+        conn = get_db_connection()
+        conn.execute(
+            "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
+            (username, email, password)
+        )
         conn.commit()
         conn.close()
 
-        return redirect("/login")
+        return redirect(url_for("login"))
 
     return render_template("signup.html")
 
-# ---------- LOGIN ----------
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         email = request.form["email"]
         password = request.form["password"]
 
-        conn = sqlite3.connect(DATABASE)
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-
-        cursor.execute("""
-            SELECT * FROM users WHERE email = ? AND password = ?
-        """, (email, password))
-
-        user = cursor.fetchone()
+        conn = get_db_connection()
+        user = conn.execute(
+            "SELECT * FROM users WHERE email = ? AND password = ?",
+            (email, password)
+        ).fetchone()
         conn.close()
 
         if user:
-            return redirect("/")
+            return redirect(url_for("home"))
         else:
-            return "Invalid credentials"
+            return "Invalid Credentials"
 
     return render_template("login.html")
+
 
 if __name__ == "__main__":
     app.run(debug=True)

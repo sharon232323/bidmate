@@ -1,10 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Item</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
 <div class="form-container">
-<form method="POST">
-    <h2>Add Item</h2>
-    <input type="text" name="name" placeholder="Item Name" required>
-    <input type="text" name="price" placeholder="Price" required>
-    <input type="text" name="category" placeholder="Category" required>
-    <textarea name="description" placeholder="Description" required></textarea>
-    <button type="submit">Add Item</button>
-</form>
+    <h2>Add Product</h2>
+    <form method="POST">
+        <input type="text" name="name" placeholder="Product Name" required>
+        <input type="text" name="price" placeholder="Price" required>
+        <input type="text" name="image" placeholder="Image URL" required>
+        <textarea name="description" placeholder="Description" required></textarea>
+        <button type="submit">Add Item</button>
+    </form>
 </div>
+
+</body>
+</html>

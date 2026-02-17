@@ -1,32 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>{{ item.name }} | BidMate</title>
+    <title>Item Detail</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
-<div class="navbar">
-    <div class="logo">BidMate</div>
-    <div class="nav-links">
-        <a href="/">Home</a>
-        <a href="/add-item">Sell</a>
-    </div>
-</div>
-
 <div class="detail-container">
-    <div class="detail-card">
-        <div class="detail-left">
-            <div class="image-placeholder">📦 Product Image</div>
-        </div>
-
-        <div class="detail-right">
-            <h1>{{ item.name }}</h1>
-            <h2>₹{{ item.price }}</h2>
-            <p class="category-badge">{{ item.category }}</p>
-            <p class="description">{{ item.description }}</p>
-            <button class="buy-btn">Place Bid</button>
-        </div>
+    <img src="{{ item['image'] }}">
+    <div>
+        <h2>{{ item['name'] }}</h2>
+        <h3 class="price">₹ {{ item['price'] }}</h3>
+        <p>{{ item['description'] }}</p>
     </div>
 </div>
 
