@@ -140,9 +140,12 @@ def add_item():
         return redirect("/login")
 
     if request.method == "POST":
-        title = request.form["title"]
-        description = request.form["description"]
-        image_file = request.files["image"]
+        title = request.form.get("title")
+        description = request.form.get("description")
+        image_file = request.files.get("image")
+
+        if not image_file or image_file.filename == "":
+            return "Please upload an image"
 
         filename = secure_filename(image_file.filename)
         image_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
