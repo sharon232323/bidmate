@@ -1,11 +1,41 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Dashboard</title>
-</head>
-<body>
-    <h2>Welcome {{ user }} 🎉</h2>
-    <p>You are logged in.</p>
-    <a href="/logout">Logout</a>
-</body>
-</html>
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-container">
+    <h2 class="page-title">My Offers Dashboard</h2>
+
+    {% if offers %}
+        <div class="card-grid">
+            {% for offer in offers %}
+                <div class="card">
+
+                    <div class="card-header">
+                        <h3>Offer #{{ offer.id }}</h3>
+                        <span class="status 
+                            {% if offer.status == 'Accepted' %}
+                                accepted
+                            {% elif offer.status == 'Rejected' %}
+                                rejected
+                            {% else %}
+                                pending
+                            {% endif %}
+                        ">
+                            {{ offer.status }}
+                        </span>
+                    </div>
+
+                    <div class="card-body">
+                        <p class="offer-text">{{ offer.offer_text }}</p>
+                    </div>
+
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <p>You haven’t made any offers yet.</p>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

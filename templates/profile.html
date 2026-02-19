@@ -1,23 +1,30 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="form-container">
-    <h2>My Profile</h2>
+<div class="profile-container">
+    <div class="profile-card">
 
-    {% if user['profile_pic'] %}
-        <div style="text-align:center;">
-            <img src="{{ url_for('static', filename='uploads/' + user['profile_pic']) }}"
-                 style="width:120px;height:120px;border-radius:50%;object-fit:cover;margin-bottom:15px;">
+        <div class="profile-avatar">
+            {{ user.email[0]|upper }}
         </div>
-    {% endif %}
 
-    <p><strong>Email:</strong> {{ user['email'] }}</p>
+        <h2>{{ user.email }}</h2>
 
-    <form method="POST" enctype="multipart/form-data">
-        <textarea name="bio" placeholder="Write something about yourself...">{{ user['bio'] }}</textarea>
-        <input type="file" name="profile_pic">
-        <button type="submit">Update Profile</button>
-    </form>
+        <div class="profile-stats">
+            <div>
+                <h3>{{ items_count }}</h3>
+                <p>Items Listed</p>
+            </div>
+            <div>
+                <h3>{{ offers_count }}</h3>
+                <p>Offers Made</p>
+            </div>
+        </div>
+
+        <a href="/my_listings" class="profile-btn">View My Listings</a>
+        <a href="/dashboard" class="profile-btn secondary">View My Offers</a>
+
+    </div>
 </div>
 
 {% endblock %}

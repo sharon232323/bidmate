@@ -1,211 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
-
-* {
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:'Poppins',sans-serif;
-}
-
-body {
-    background:#f5f6fa;
-    color:#333;
-}
-
-/* NAVBAR */
-.navbar {
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:15px 60px;
-    background:white;
-    box-shadow:0 4px 20px rgba(0,0,0,0.05);
-}
-
-.logo {
-    font-weight:700;
-    font-size:22px;
-    color:#6c5ce7;
-}
-
-.nav-links a {
-    margin-left:25px;
-    text-decoration:none;
-    color:#333;
-    font-weight:500;
-}
-
-/* HERO */
-.hero {
-    background:linear-gradient(135deg,#6c5ce7,#a29bfe);
-    color:white;
-    padding:90px 60px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-}
-
-.hero h1 {
-    font-size:42px;
-}
-
-.hero-buttons a {
-    display:inline-block;
-    margin-right:15px;
-    padding:12px 24px;
-    border-radius:8px;
-    text-decoration:none;
-    font-weight:600;
-}
-
-.primary-btn {
-    background:#00b894;
-    color:white;
-}
-
-.secondary-btn {
-    background:white;
-    color:#6c5ce7;
-}
-
-/* PRODUCTS GRID */
-.products {
-    padding:60px;
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
-    gap:30px;
-}
-
-.card {
-    background:white;
-    border-radius:12px;
-    overflow:hidden;
-    box-shadow:0 8px 25px rgba(0,0,0,0.05);
-    transition:0.3s;
-}
-
-.card:hover {
-    transform:translateY(-8px);
-}
-
-.card img {
-    width:100%;
-    height:200px;
-    object-fit:cover;
-}
-
-.card-content {
-    padding:20px;
-}
-
-.price {
-    color:#6c5ce7;
-    font-weight:600;
-    margin-top:10px;
-}
-
-/* FORM */
-.form-container {
-    width:400px;
-    margin:80px auto;
-    background:white;
-    padding:40px;
-    border-radius:12px;
-    box-shadow:0 10px 30px rgba(0,0,0,0.1);
-}
-
-.form-container input,
-.form-container textarea {
-    width:100%;
-    padding:12px;
-    margin-bottom:15px;
-    border:1px solid #ddd;
-    border-radius:6px;
-}
-
-.form-container button {
-    width:100%;
-    padding:12px;
-    background:#6c5ce7;
-    color:white;
-    border:none;
-    border-radius:6px;
-    font-weight:600;
-}
-
-.page-title {
-    text-align: center;
-    margin: 30px 0;
-    font-size: 28px;
-    font-weight: 600;
-}
-
-.card-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 25px;
-    padding: 20px;
-}
-
-.card {
-    background: white;
-    border-radius: 12px;
-    padding: 15px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-    text-align: center;
-    transition: 0.3s ease;
-}
-
-.card:hover {
-    transform: translateY(-5px);
-}
-
-.card img {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 8px;
-}
-
-.view-btn {
-    display: inline-block;
-    margin-top: 10px;
-    padding: 8px 15px;
-    background: #6C63FF;
-    color: white;
-    border-radius: 6px;
-    text-decoration: none;
-}
-
-.delete-btn {
-    margin-top: 10px;
-    padding: 8px 15px;
-    background: linear-gradient(135deg, #ff4b4b, #c70039);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.delete-btn:hover {
-    opacity: 0.85;
-}
-
-.detail-container {
-    display: flex;
-    gap: 40px;
-    padding: 40px;
-}
-
-.detail-img {
-    width: 400px;
-    border-radius: 12px;
-}
-
-.detail-info {
-    max-width: 500px;
-}
+/* ================= GLOBAL ================= */
 
 body {
     margin: 0;
@@ -213,84 +6,189 @@ body {
     background-color: #f4f6fb;
 }
 
+.page-container {
+    max-width: 1100px;
+    margin: auto;
+    padding: 30px 20px;
+}
+
+.page-title {
+    font-size: 28px;
+    margin-bottom: 25px;
+    color: #333;
+}
+
 /* ================= NAVBAR ================= */
 
-.navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 50px;
+nav {
     background: linear-gradient(135deg, #6C63FF, #4B47D1);
-    color: white;
+    padding: 15px 40px;
 }
 
-.logo a {
-    font-size: 22px;
-    font-weight: 600;
+nav a {
     color: white;
     text-decoration: none;
-}
-
-.nav-links a {
-    margin-left: 20px;
-    text-decoration: none;
-    color: white;
+    margin-right: 20px;
     font-weight: 500;
-    transition: 0.3s ease;
 }
 
-.nav-links a:hover {
+nav a:hover {
     opacity: 0.8;
 }
 
-.login-btn {
+/* ================= CARDS ================= */
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.card {
     background: white;
-    color: #6C63FF !important;
-    padding: 6px 14px;
-    border-radius: 6px;
+    padding: 20px;
+    border-radius: 14px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+    transition: 0.3s ease;
 }
 
-.signup-btn {
-    background: #ffcc00;
-    color: black !important;
-    padding: 6px 14px;
-    border-radius: 6px;
+.card:hover {
+    transform: translateY(-4px);
 }
 
-.logout-btn {
-    background: #ff4b4b;
-    padding: 6px 14px;
+/* ================= CARD HEADER ================= */
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.card-header h3 {
+    margin: 0;
+    font-size: 18px;
+}
+
+/* ================= STATUS BADGES ================= */
+
+.status {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+    color: white;
+}
+
+.status.pending {
+    background-color: #f0ad4e;
+}
+
+.status.accepted {
+    background-color: #28a745;
+}
+
+.status.rejected {
+    background-color: #dc3545;
+}
+
+/* ================= CARD BODY ================= */
+
+.offer-text {
+    color: #555;
+    font-size: 15px;
+}
+
+/* ================= EMPTY STATE ================= */
+
+.empty-state {
+    background: white;
+    padding: 30px;
+    border-radius: 14px;
+    text-align: center;
+    color: #777;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.05);
+}
+
+/* ================= BUTTONS ================= */
+
+button {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+/* ================= FORMS ================= */
+
+input, textarea {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
     border-radius: 6px;
+    border: 1px solid #ccc;
 }
 
 /* ================= FLASH ================= */
 
-.flash-container {
-    text-align: center;
-    margin-top: 15px;
-}
-
-.flash-message {
-    display: inline-block;
-    background: #e0e7ff;
-    color: #333;
-    padding: 10px 20px;
+p[style] {
+    background: #ffe5e5;
+    padding: 10px;
     border-radius: 8px;
-    margin-bottom: 10px;
 }
 
-/* ================= MAIN ================= */
+/* ================= CONTACT PAGE ================= */
 
-.main-content {
-    min-height: 80vh;
-    padding: 20px 50px;
+.contact-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 40px;
 }
 
-/* ================= FOOTER ================= */
+.contact-card {
+    background: white;
+    padding: 40px;
+    width: 450px;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
 
-.footer {
-    text-align: center;
-    padding: 20px;
-    background: #222;
+.contact-card h2 {
+    margin-top: 0;
+}
+
+.contact-card input,
+.contact-card textarea {
+    width: 100%;
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+.contact-card button {
+    background: #6C63FF;
     color: white;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+}
+
+.contact-card button:hover {
+    opacity: 0.9;
+}
+
+/* ================= BARTER PAGE ================= */
+
+.bartered-label {
+    color: #28a745;
+    font-weight: bold;
+    margin-top: 10px;
 }
