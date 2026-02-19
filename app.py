@@ -56,22 +56,20 @@ def signup():
         conn = get_db_connection()
         cur = conn.cursor()
 
-        # 🔍 Check if user already exists
-        cur.execute("SELECT * FROM users WHERE email=%s", (email,))
-        existing_user = cur.fetchone()
+        try:
+            # Try inserting directly
+            cur.execute(
+                "INSERT INTO users (email, password) VALUES (%s, %s)",
+                (email, password)
+            )
+            conn.commit()
 
-        if existing_user:
+        except Exception:
+            conn.rollback()
             flash("Email already registered. Please login instead.")
             cur.close()
             conn.close()
             return redirect(url_for("signup"))
-
-        # ✅ If not exists → insert
-        cur.execute(
-            "INSERT INTO users (email, password) VALUES (%s, %s)",
-            (email, password)
-        )
-        conn.commit()
 
         cur.close()
         conn.close()
@@ -80,6 +78,7 @@ def signup():
         return redirect(url_for("login"))
 
     return render_template("signup.html")
+
 # ================= LOGIN =================
 
 @app.route("/login", methods=["GET", "POST"])
