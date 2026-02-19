@@ -1,27 +1,70 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>BidMate</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Main CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
 
-<div class="navbar">
-    <div class="logo">BidMate</div>
-    <div class="nav-links">
-        <a href="/">Home</a>
-        {% if session.get("user_email") %}
-            <a href="/add_item">Sell Item</a>
-            <a href="/profile">Profile</a>
-            <a href="/logout">Logout</a>
-        {% else %}
-            <a href="/login">Login</a>
-            <a href="/signup">Signup</a>
-        {% endif %}
+<!-- ================= NAVBAR ================= -->
+<nav class="navbar">
+    <div class="logo">
+        <a href="/">BidMate</a>
     </div>
-</div>
 
-{% block content %}{% endblock %}
+    <div class="nav-links">
+
+        <a href="/">Home</a>
+        <a href="/contact">Contact</a>
+
+        {% if session.get("user") %}
+            <a href="/add_item">Add Item</a>
+            <a href="/my_listings">My Listings</a>
+            <a href="/dashboard">Dashboard</a>
+            <a href="/profile">Profile</a>
+            <a href="/logout" class="logout-btn">Logout</a>
+        {% else %}
+            <a href="/login" class="login-btn">Login</a>
+            <a href="/signup" class="signup-btn">Sign Up</a>
+        {% endif %}
+
+    </div>
+</nav>
+
+
+<!-- ================= FLASH MESSAGES ================= -->
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class="flash-container">
+        {% for message in messages %}
+            <div class="flash-message">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+
+<!-- ================= MAIN CONTENT ================= -->
+<main class="main-content">
+    {% block content %}
+    {% endblock %}
+</main>
+
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+    <p>© 2026 BidMate. Built with ❤️</p>
+</footer>
 
 </body>
 </html>

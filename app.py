@@ -214,6 +214,43 @@ def make_offer(item_id):
 
     return redirect(f"/item/{item_id}")
 
+# ================= DELETE ITEM =================
+
+@app.route("/delete_item/<int:item_id>", methods=["POST"])
+def delete_item(item_id):
+    if "user" not in session:
+        return redirect("/login")
+
+    conn = get_db()
+    cur = conn.cursor()
+
+    # Check item ownership
+    cur.execute("SELECT owner FROM items WHERE id=%s", (item_id,))
+    item = cur.fetchone()
+
+    if not item:
+        cur.close()
+        conn.close()
+        return "Item not found"
+
+    if item[0] != session["user"]:
+        cur.close()
+        conn.close()
+        return "Unauthorized"
+
+    # Delete related offers first
+    cur.execute("DELETE FROM offers WHERE item_id=%s", (item_id,))
+
+    # Delete item
+    cur.execute("DELETE FROM items WHERE id=%s", (item_id,))
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    flash("Item deleted successfully.")
+    return redirect("/")
+
 
 if __name__ == "__main__":
     app.run()

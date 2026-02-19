@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="page-title">My Listings</h2>
+
+<div class="card-grid">
+
+{% for item in items %}
+<div class="card">
+
+    <img src="{{ url_for('static', filename='uploads/' + item[3]) }}">
+
+    <h3>{{ item[1] }}</h3>
+    <p>Status: {{ item[5] }}</p>
+
+    <a href="/item/{{ item[0] }}" class="view-btn">View</a>
+
+    <form action="/delete_item/{{ item[0] }}" method="POST"
+          onsubmit="return confirm('Delete this item?');">
+        <button type="submit" class="delete-btn small">
+            Delete
+        </button>
+    </form>
+
+</div>
+{% endfor %}
+
+</div>
+
+{% endblock %}
