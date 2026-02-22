@@ -22,6 +22,11 @@
     <li><a href="/login">Login</a></li>
     <li><a href="/signup">Signup</a></li>
 {% endif %}
+{% if session.get('user_id') and session.get('user_role') %}
+    {% if User.query.get(session['user_id']).is_admin %}
+        <li><a href="/admin">Admin</a></li>
+    {% endif %}
+{% endif %}
     </ul>
 </nav>
 

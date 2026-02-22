@@ -65,20 +65,35 @@ def signup():
             flash("Email already registered.")
             return redirect(url_for("signup"))
 
-        # Save ID card
-        id_filename = id_card_file.filename
-        id_path = os.path.join(app.config["UPLOAD_FOLDER"], id_filename)
+        # Save ID card with unique name
+        import uuid
+        unique_filename = str(uuid.uuid4()) + "_" + id_card_file.filename
+        id_path = os.path.join(app.config["UPLOAD_FOLDER"], unique_filename)
         id_card_file.save(id_path)
 
         hashed_password = generate_password_hash(password)
 
-        new_user = User(
-            name=name,
-            email=email,
-            password=hashed_password,
-            id_card=id_filename,
-            role="Buyer"
-        )
+        # Admin Logic
+        if email == SUPER_ADMIN_EMAIL:
+            new_user = User(
+                name=name,
+                email=email,
+                password=hashed_password,
+                id_card=unique_filename,
+                role="Seller",
+                status="Approved",
+                is_admin=True
+            )
+        else:
+            new_user = User(
+                name=name,
+                email=email,
+                password=hashed_password,
+                id_card=unique_filename,
+                role="Buyer",
+                status="Pending",
+                is_admin=False
+            )
 
         db.session.add(new_user)
         db.session.commit()
@@ -240,6 +255,92 @@ def item_detail(item_id):
     item = Item.query.get_or_404(item_id)
     return render_template("item_detail.html", item=item)
 
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    if request.method == "POST":
+        name = request.form["name"]
+        email = request.form["email"]
+        password = request.form["password"]
+        id_card_file = request.files["id_card"]
+
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user:
+            flash("Email already registered.")
+            return redirect(url_for("signup"))
+
+        # Save ID card with unique name
+        import uuid
+        unique_filename = str(uuid.uuid4()) + "_" + id_card_file.filename
+        id_path = os.path.join(app.config["UPLOAD_FOLDER"], unique_filename)
+        id_card_file.save(id_path)
+
+        hashed_password = generate_password_hash(password)
+
+        # Admin Logic
+        if email == SUPER_ADMIN_EMAIL:
+            new_user = User(
+                name=name,
+                email=email,
+                password=hashed_password,
+                id_card=unique_filename,
+                role="Seller",
+                status="Approved",
+                is_admin=True
+            )
+        else:
+            new_user = User(
+                name=name,
+                email=email,
+                password=hashed_password,
+                id_card=unique_filename,
+                role="Buyer",
+                status="Pending",
+                is_admin=False
+            )
+
+        db.session.add(new_user)
+        db.session.commit()
+
+        flash("Account created successfully! Please login.")
+        return redirect(url_for("login"))
+
+    return render_template("signup.html")
+
+@app.route("/approve/<int:user_id>")
+def approve_user(user_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    admin = User.query.get(session["user_id"])
+
+    if not admin.is_admin:
+        flash("Access denied.")
+        return redirect(url_for("home"))
+
+    user = User.query.get_or_404(user_id)
+    user.status = "Approved"
+
+    db.session.commit()
+    flash("User approved.")
+    return redirect(url_for("admin_dashboard"))
+
+@app.route("/reject/<int:user_id>")
+def reject_user(user_id):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    admin = User.query.get(session["user_id"])
+
+    if not admin.is_admin:
+        flash("Access denied.")
+        return redirect(url_for("home"))
+
+    user = User.query.get_or_404(user_id)
+    db.session.delete(user)
+    db.session.commit()
+
+    flash("User rejected and removed.")
+    return redirect(url_for("admin_dashboard"))
 # ------------------ INIT ------------------
 
 if __name__ == "__main__":
