@@ -11,6 +11,7 @@ db_path = os.path.join(BASE_DIR, "bidmate.db")
 
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+SUPER_ADMIN_EMAIL = "thanusreecse2023@gmail.com"
 
 db = SQLAlchemy(app)
 UPLOAD_FOLDER = "static/uploads"
@@ -29,6 +30,8 @@ class User(db.Model):
     password = db.Column(db.String(200), nullable=False)
     id_card = db.Column(db.String(200))
     role = db.Column(db.String(50), default="Buyer")
+    status = db.Column(db.String(50), default="Pending")
+    is_admin = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Item(db.Model):
