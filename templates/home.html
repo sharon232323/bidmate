@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BidMate</title>
+</head>
+<body>
+    <h1>Welcome to BidMate</h1>
+
+    {% for item in items %}
+        <div>
+            <h3>{{ item.title }}</h3>
+            <p>{{ item.description }}</p>
+            <p>₹{{ item.price }}</p>
+            <img src="{{ url_for('static', filename='uploads/' + item.image) }}" width="150">
+        </div>
+        <hr>
+    {% endfor %}
+
+    <a href="/login">Login</a>
+    <a href="/signup">Signup</a>
+</body>
+</html>
