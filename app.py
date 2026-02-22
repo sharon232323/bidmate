@@ -19,6 +19,17 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 # ------------------ MODEL ------------------
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask import session
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(150), nullable=False)
+    email = db.Column(db.String(150), unique=True, nullable=False)
+    password = db.Column(db.String(200), nullable=False)
+    id_card = db.Column(db.String(200))
+    role = db.Column(db.String(50), default="Buyer")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -38,8 +49,98 @@ def home():
     items = Item.query.filter_by(is_barter=False).order_by(Item.created_at.desc()).all()
     return render_template("index.html", items=items)
 
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    if request.method == "POST":
+        name = request.form["name"]
+        email = request.form["email"]
+        password = request.form["password"]
+        id_card_file = request.files["id_card"]
+
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user:
+            flash("Email already registered.")
+            return redirect(url_for("signup"))
+
+        # Save ID card
+        id_filename = id_card_file.filename
+        id_path = os.path.join(app.config["UPLOAD_FOLDER"], id_filename)
+        id_card_file.save(id_path)
+
+        hashed_password = generate_password_hash(password)
+
+        new_user = User(
+            name=name,
+            email=email,
+            password=hashed_password,
+            id_card=id_filename,
+            role="Buyer"
+        )
+
+        db.session.add(new_user)
+        db.session.commit()
+
+        flash("Account created successfully! Please login.")
+        return redirect(url_for("login"))
+
+    return render_template("signup.html")
+    
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        email = request.form["email"]
+        password = request.form["password"]
+
+        user = User.query.filter_by(email=email).first()
+
+        if user and check_password_hash(user.password, password):
+            session["user_id"] = user.id
+            session["user_role"] = user.role
+            session["user_name"] = user.name
+
+            flash("Logged in successfully!")
+            return redirect(url_for("home"))
+        else:
+            flash("Invalid credentials.")
+            return redirect(url_for("login"))
+
+    return render_template("login.html")
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    flash("Logged out successfully.")
+    return redirect(url_for("home"))
+
+@app.route("/switch_role")
+def switch_role():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user = User.query.get(session["user_id"])
+
+    if user.role == "Buyer":
+        user.role = "Seller"
+    else:
+        user.role = "Buyer"
+
+    db.session.commit()
+    session["user_role"] = user.role
+
+    flash(f"Switched to {user.role} role.")
+    return redirect(url_for("home"))
+
 @app.route("/sell", methods=["GET", "POST"])
 def sell():
+    if "user_id" not in session:
+        flash("Please login first.")
+        return redirect(url_for("login"))
+
+    if session["user_role"] != "Seller":
+        flash("Switch to Seller role to list items.")
+        return redirect(url_for("home"))
+
+    # keep existing sell logic below
     if request.method == "POST":
         title = request.form["title"]
         description = request.form["description"]

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="form-container">
+    <h2>Student Signup</h2>
+
+    <form method="POST" enctype="multipart/form-data" class="modern-form">
+        <input type="text" name="name" placeholder="Full Name" required>
+        <input type="email" name="email" placeholder="College Email" required>
+        <input type="password" name="password" placeholder="Password" required>
+
+        <label>Upload ID Card</label>
+        <input type="file" name="id_card" required>
+
+        <button type="submit" class="primary-btn">Create Account</button>
+    </form>
+</div>
+
+{% endblock %}

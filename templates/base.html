@@ -15,6 +15,13 @@
         <li><a href="/categories">Categories</a></li>
         <li><a href="/contact">Contact</a></li>
         <button onclick="toggleDarkMode()" class="dark-btn">🌙</button>
+        {% if session.get('user_id') %}
+    <li><a href="/switch_role">Switch Role ({{ session['user_role'] }})</a></li>
+    <li><a href="/logout">Logout</a></li>
+{% else %}
+    <li><a href="/login">Login</a></li>
+    <li><a href="/signup">Signup</a></li>
+{% endif %}
     </ul>
 </nav>
 

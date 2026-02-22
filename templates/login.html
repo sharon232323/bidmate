@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="form-container">
+    <h2>Student Login</h2>
+
+    <form method="POST" class="modern-form">
+        <input type="email" name="email" placeholder="College Email" required>
+        <input type="password" name="password" placeholder="Password" required>
+
+        <button type="submit" class="primary-btn">Login</button>
+    </form>
+</div>
+
+{% endblock %}
