@@ -1,56 +1,72 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, session, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from werkzeug.utils import secure_filename
 import os
+from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = "super_secret_bidmate"
+app.secret_key = "bidmate_secret_key"
 
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-db_path = os.path.join(BASE_DIR, "bidmate.db")
-
-app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
+# DATABASE
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///bidmate.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-SUPER_ADMIN_EMAIL = "thanusreecse2023@gmail.com"
 
-db = SQLAlchemy(app)
+# UPLOAD FOLDER
 UPLOAD_FOLDER = "static/uploads"
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
-# ------------------ MODEL ------------------
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask import session
+
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
+db = SQLAlchemy(app)
+
+# =========================
+# MODELS
+# =========================
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(150), nullable=False)
-    email = db.Column(db.String(150), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=False)
+    name = db.Column(db.String(100))
+    email = db.Column(db.String(120), unique=True)
+    password = db.Column(db.String(100))
+    year = db.Column(db.String(20))
+    department = db.Column(db.String(100))
     id_card = db.Column(db.String(200))
-    role = db.Column(db.String(50), default="Buyer")
-    status = db.Column(db.String(50), default="Pending")
+    approved = db.Column(db.Boolean, default=False)
+    role = db.Column(db.String(20), default="buyer")
     is_admin = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
-    description = db.Column(db.Text, nullable=False)
-    price = db.Column(db.Float, nullable=False)
-    current_bid = db.Column(db.Float, default=0)
-    category = db.Column(db.String(100), nullable=False)
+    title = db.Column(db.String(200))
+    description = db.Column(db.Text)
+    category = db.Column(db.String(100))
+    price = db.Column(db.Float)
     image = db.Column(db.String(200))
-    is_barter = db.Column(db.Boolean, default=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-# ------------------ ROUTES ------------------
+
+# =========================
+# ADMIN EMAIL (YOU)
+# =========================
+ADMIN_EMAIL = "thanusreecse2023@gmail.com"
+
+
+# =========================
+# ROUTES
+# =========================
 
 @app.route("/")
 def home():
-    items = Item.query.filter_by(is_barter=False).order_by(Item.created_at.desc()).all()
-    return render_template("index.html", items=items)
+    items = Item.query.order_by(Item.created_at.desc()).all()
+    return render_template("home.html", items=items)
+
+
+# =========================
+# SIGNUP
+# =========================
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
@@ -58,290 +74,202 @@ def signup():
         name = request.form["name"]
         email = request.form["email"]
         password = request.form["password"]
+        year = request.form["year"]
+        department = request.form["department"]
+
         id_card_file = request.files["id_card"]
+        filename = secure_filename(id_card_file.filename)
+        filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+        id_card_file.save(filepath)
 
-        existing_user = User.query.filter_by(email=email).first()
-        if existing_user:
-            flash("Email already registered.")
-            return redirect(url_for("signup"))
+        is_admin = False
+        approved = False
 
-        # Save ID card with unique name
-        import uuid
-        unique_filename = str(uuid.uuid4()) + "_" + id_card_file.filename
-        id_path = os.path.join(app.config["UPLOAD_FOLDER"], unique_filename)
-        id_card_file.save(id_path)
+        if email == ADMIN_EMAIL:
+            is_admin = True
+            approved = True
 
-        hashed_password = generate_password_hash(password)
+        user = User(
+            name=name,
+            email=email,
+            password=password,
+            year=year,
+            department=department,
+            id_card=filename,
+            approved=approved,
+            is_admin=is_admin
+        )
 
-        # Admin Logic
-        if email == SUPER_ADMIN_EMAIL:
-            new_user = User(
-                name=name,
-                email=email,
-                password=hashed_password,
-                id_card=unique_filename,
-                role="Seller",
-                status="Approved",
-                is_admin=True
-            )
-        else:
-            new_user = User(
-                name=name,
-                email=email,
-                password=hashed_password,
-                id_card=unique_filename,
-                role="Buyer",
-                status="Pending",
-                is_admin=False
-            )
-
-        db.session.add(new_user)
+        db.session.add(user)
         db.session.commit()
 
-        flash("Account created successfully! Please login.")
-        return redirect(url_for("login"))
+        flash("Signup successful! Wait for admin approval.")
+        return redirect("/login")
 
     return render_template("signup.html")
-    
+
+
+# =========================
+# LOGIN
+# =========================
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         email = request.form["email"]
         password = request.form["password"]
 
-        user = User.query.filter_by(email=email).first()
+        user = User.query.filter_by(email=email, password=password).first()
 
-        if user and check_password_hash(user.password, password):
+        if user:
+            if not user.approved:
+                flash("Wait for admin approval.")
+                return redirect("/login")
+
             session["user_id"] = user.id
-            session["user_role"] = user.role
-            session["user_name"] = user.name
+            session["is_admin"] = user.is_admin
+            return redirect("/")
 
-            flash("Logged in successfully!")
-            return redirect(url_for("home"))
-        else:
-            flash("Invalid credentials.")
-            return redirect(url_for("login"))
+        flash("Invalid credentials")
+        return redirect("/login")
 
     return render_template("login.html")
+
+
+# =========================
+# LOGOUT
+# =========================
 
 @app.route("/logout")
 def logout():
     session.clear()
-    flash("Logged out successfully.")
-    return redirect(url_for("home"))
+    return redirect("/")
 
-@app.route("/switch_role")
-def switch_role():
+
+# =========================
+# PROFILE PAGE
+# =========================
+
+@app.route("/profile")
+def profile():
     if "user_id" not in session:
-        return redirect(url_for("login"))
+        return redirect("/login")
 
     user = User.query.get(session["user_id"])
+    return render_template("profile.html", user=user)
 
-    if user.role == "Buyer":
-        user.role = "Seller"
-    else:
-        user.role = "Buyer"
 
-    db.session.commit()
-    session["user_role"] = user.role
-
-    flash(f"Switched to {user.role} role.")
-    return redirect(url_for("home"))
+# =========================
+# SELL ITEM
+# =========================
 
 @app.route("/sell", methods=["GET", "POST"])
 def sell():
     if "user_id" not in session:
-        flash("Please login first.")
-        return redirect(url_for("login"))
+        return redirect("/login")
 
-    if session["user_role"] != "Seller":
-        flash("Switch to Seller role to list items.")
-        return redirect(url_for("home"))
-
-    # keep existing sell logic below
     if request.method == "POST":
         title = request.form["title"]
         description = request.form["description"]
-        price = float(request.form["price"])
         category = request.form["category"]
-        barter = True if request.form.get("barter") else False
+        price = request.form["price"]
 
         image_file = request.files["image"]
-        image_filename = None
+        filename = secure_filename(image_file.filename)
+        image_file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
 
-        if image_file:
-            image_filename = image_file.filename
-            image_path = os.path.join(app.config["UPLOAD_FOLDER"], image_filename)
-            image_file.save(image_path)
-
-        new_item = Item(
+        item = Item(
             title=title,
             description=description,
-            price=price,
-            current_bid=price,
             category=category,
-            image=image_filename,
-            is_barter=barter
+            price=price,
+            image=filename,
+            user_id=session["user_id"]
         )
 
-        db.session.add(new_item)
+        db.session.add(item)
         db.session.commit()
 
         flash("Item listed successfully!")
-        return redirect(url_for("my_listings"))
+        return redirect("/")
 
     return render_template("sell.html")
 
-@app.route("/bid/<int:item_id>", methods=["POST"])
-def bid(item_id):
-    item = Item.query.get_or_404(item_id)
-    bid_amount = float(request.form["bid_amount"])
 
-    if bid_amount > item.current_bid:
-        item.current_bid = bid_amount
-        db.session.commit()
-        flash("Bid placed successfully!")
-    else:
-        flash("Bid must be higher than current bid.")
-
-    return redirect(url_for("item_detail", item_id=item.id))
+# =========================
+# DELETE ITEM
+# =========================
 
 @app.route("/delete/<int:item_id>")
-def delete_item(item_id):
-    item = Item.query.get_or_404(item_id)
-    db.session.delete(item)
-    db.session.commit()
-    flash("Item deleted successfully!")
-    return redirect(url_for("my_listings"))
+def delete(item_id):
+    if "user_id" not in session:
+        return redirect("/login")
 
-@app.route("/categories")
-def categories():
-    categories_list = [
-        "Books and notes",
-        "Hostel essentials",
-        "Electronic and gadget",
-        "Arts and craft",
-        "Project components",
-        "Fashion and accessories",
-        "Furniture and miscellaneous"
-    ]
-    items = Item.query.filter_by(is_barter=False).all()
-    barter_items = Item.query.filter_by(is_barter=True).all()
+    item = Item.query.get(item_id)
 
-    return render_template("categories.html",
-                           categories=categories_list,
-                           items=items,
-                           barter_items=barter_items)
-
-@app.route("/barter")
-def barter():
-    barter_items = Item.query.filter_by(is_barter=True).all()
-    return render_template("barter.html", barter_items=barter_items)
-
-@app.route("/contact", methods=["GET", "POST"])
-def contact():
-    if request.method == "POST":
-        flash("Message sent successfully!")
-        return redirect(url_for("contact"))
-    return render_template("contact.html")
-
-@app.route("/my_listings")
-def my_listings():
-    items = Item.query.order_by(Item.created_at.desc()).all()
-    return render_template("my_listings.html", items=items)
-
-@app.route("/item/<int:item_id>")
-def item_detail(item_id):
-    item = Item.query.get_or_404(item_id)
-    return render_template("item_detail.html", item=item)
-
-@app.route("/signup", methods=["GET", "POST"])
-def signup():
-    if request.method == "POST":
-        name = request.form["name"]
-        email = request.form["email"]
-        password = request.form["password"]
-        id_card_file = request.files["id_card"]
-
-        existing_user = User.query.filter_by(email=email).first()
-        if existing_user:
-            flash("Email already registered.")
-            return redirect(url_for("signup"))
-
-        # Save ID card with unique name
-        import uuid
-        unique_filename = str(uuid.uuid4()) + "_" + id_card_file.filename
-        id_path = os.path.join(app.config["UPLOAD_FOLDER"], unique_filename)
-        id_card_file.save(id_path)
-
-        hashed_password = generate_password_hash(password)
-
-        # Admin Logic
-        if email == SUPER_ADMIN_EMAIL:
-            new_user = User(
-                name=name,
-                email=email,
-                password=hashed_password,
-                id_card=unique_filename,
-                role="Seller",
-                status="Approved",
-                is_admin=True
-            )
-        else:
-            new_user = User(
-                name=name,
-                email=email,
-                password=hashed_password,
-                id_card=unique_filename,
-                role="Buyer",
-                status="Pending",
-                is_admin=False
-            )
-
-        db.session.add(new_user)
+    if item.user_id == session["user_id"] or session.get("is_admin"):
+        db.session.delete(item)
         db.session.commit()
 
-        flash("Account created successfully! Please login.")
-        return redirect(url_for("login"))
+    return redirect("/")
 
-    return render_template("signup.html")
+
+# =========================
+# ADMIN DASHBOARD
+# =========================
+
+@app.route("/admin")
+def admin():
+    if not session.get("is_admin"):
+        return redirect("/")
+
+    pending_users = User.query.filter_by(approved=False).all()
+    all_users = User.query.all()
+    all_items = Item.query.all()
+
+    return render_template(
+        "admin.html",
+        pending_users=pending_users,
+        all_users=all_users,
+        all_items=all_items
+    )
+
+
+# =========================
+# APPROVE USER
+# =========================
 
 @app.route("/approve/<int:user_id>")
-def approve_user(user_id):
-    if "user_id" not in session:
-        return redirect(url_for("login"))
+def approve(user_id):
+    if not session.get("is_admin"):
+        return redirect("/")
 
-    admin = User.query.get(session["user_id"])
-
-    if not admin.is_admin:
-        flash("Access denied.")
-        return redirect(url_for("home"))
-
-    user = User.query.get_or_404(user_id)
-    user.status = "Approved"
-
+    user = User.query.get(user_id)
+    user.approved = True
     db.session.commit()
-    flash("User approved.")
-    return redirect(url_for("admin_dashboard"))
+
+    return redirect("/admin")
+
+
+# =========================
+# REJECT USER
+# =========================
 
 @app.route("/reject/<int:user_id>")
-def reject_user(user_id):
-    if "user_id" not in session:
-        return redirect(url_for("login"))
+def reject(user_id):
+    if not session.get("is_admin"):
+        return redirect("/")
 
-    admin = User.query.get(session["user_id"])
-
-    if not admin.is_admin:
-        flash("Access denied.")
-        return redirect(url_for("home"))
-
-    user = User.query.get_or_404(user_id)
+    user = User.query.get(user_id)
     db.session.delete(user)
     db.session.commit()
 
-    flash("User rejected and removed.")
-    return redirect(url_for("admin_dashboard"))
-# ------------------ INIT ------------------
+    return redirect("/admin")
+
+
+# =========================
+# RUN
+# =========================
 
 if __name__ == "__main__":
     with app.app_context():
