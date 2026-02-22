@@ -13,7 +13,11 @@ app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
+UPLOAD_FOLDER = "static/uploads"
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 # ------------------ MODEL ------------------
 
 class Item(db.Model):
@@ -21,7 +25,9 @@ class Item(db.Model):
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, nullable=False)
     price = db.Column(db.Float, nullable=False)
+    current_bid = db.Column(db.Float, default=0)
     category = db.Column(db.String(100), nullable=False)
+    image = db.Column(db.String(200))
     is_barter = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -41,11 +47,21 @@ def sell():
         category = request.form["category"]
         barter = True if request.form.get("barter") else False
 
+        image_file = request.files["image"]
+        image_filename = None
+
+        if image_file:
+            image_filename = image_file.filename
+            image_path = os.path.join(app.config["UPLOAD_FOLDER"], image_filename)
+            image_file.save(image_path)
+
         new_item = Item(
             title=title,
             description=description,
             price=price,
+            current_bid=price,
             category=category,
+            image=image_filename,
             is_barter=barter
         )
 
@@ -56,6 +72,20 @@ def sell():
         return redirect(url_for("my_listings"))
 
     return render_template("sell.html")
+
+@app.route("/bid/<int:item_id>", methods=["POST"])
+def bid(item_id):
+    item = Item.query.get_or_404(item_id)
+    bid_amount = float(request.form["bid_amount"])
+
+    if bid_amount > item.current_bid:
+        item.current_bid = bid_amount
+        db.session.commit()
+        flash("Bid placed successfully!")
+    else:
+        flash("Bid must be higher than current bid.")
+
+    return redirect(url_for("item_detail", item_id=item.id))
 
 @app.route("/delete/<int:item_id>")
 def delete_item(item_id):

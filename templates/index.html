@@ -11,6 +11,7 @@
     <h2>Our Mission & Vision</h2>
     <p>Empowering students with a sustainable campus marketplace.</p>
 </section>
+<input type="text" id="searchInput" placeholder="Search items..." class="search-bar">
 
 <h2 class="section-title">Items for Sale</h2>
 
@@ -23,6 +24,9 @@
         <a href="/item/{{ item.id }}" class="view-btn">View</a>
     </div>
     {% endfor %}
+    {% if item.image %}
+<img src="{{ url_for('static', filename='uploads/' + item.image) }}" class="card-img">
+{% endif %}
 </div>
 
 {% endblock %}
