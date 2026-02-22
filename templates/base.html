@@ -2,32 +2,35 @@
 <html>
 <head>
     <title>BidMate</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
-<nav>
-    <a href="/">Home</a>
-    {% if session.get("user") %}
-        <a href="/add_item">Add Item</a>
-        <a href="/my_listings">My Listings</a>
-        <a href="/dashboard">Dashboard</a>
-        <a href="/logout">Logout</a>
-    {% else %}
-        <a href="/login">Login</a>
-        <a href="/signup">Signup</a>
-    {% endif %}
+<nav class="navbar">
+    <div class="logo">BidMate</div>
+    <ul class="nav-links">
+        <li><a href="/">Home</a></li>
+        <li><a href="/sell">Sell</a></li>
+        <li><a href="/categories">Categories</a></li>
+        <li><a href="/contact">Contact</a></li>
+    </ul>
 </nav>
 
-{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    {% for msg in messages %}
-      <p style="color:red;">{{ msg }}</p>
-    {% endfor %}
-  {% endif %}
-{% endwith %}
+<div class="container">
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="flash">
+                {% for message in messages %}
+                    {{ message }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
 
-{% block content %}{% endblock %}
+    {% block content %}{% endblock %}
+</div>
 
+<script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

@@ -1,18 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
 
-<section class="hero">
-    <h1>About Campus</h1>
-    <p>Connecting students to buy, sell and barter on campus.</p>
-    <a href="/sell" class="btn">Start Selling</a>
-</section>
+<h2 class="section-title">Browse Categories</h2>
 
-<section class="mission">
-    <h2>Our Mission & Vision</h2>
-    <p>Empowering students with a sustainable campus marketplace.</p>
-</section>
+<div class="category-grid">
+    {% for cat in categories %}
+        <div class="category-card">
+            {{ cat }}
+        </div>
+    {% endfor %}
+</div>
 
-<h2 class="section-title">Items for Sale</h2>
+<h2 class="section-title">Available Items</h2>
 
 <div class="cards">
     {% for item in items %}
@@ -23,6 +22,10 @@
         <a href="/item/{{ item.id }}" class="view-btn">View</a>
     </div>
     {% endfor %}
+</div>
+
+<div class="center">
+    <a href="/barter" class="barter-btn">View Barter Zone</a>
 </div>
 
 {% endblock %}

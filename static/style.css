@@ -1,194 +1,173 @@
-/* ================= GLOBAL ================= */
-
 body {
     margin: 0;
-    font-family: 'Poppins', sans-serif;
-    background-color: #f4f6fb;
+    font-family: 'Segoe UI', sans-serif;
+    background: #f4f6fa;
 }
 
-.page-container {
-    max-width: 1100px;
-    margin: auto;
-    padding: 30px 20px;
-}
-
-.page-title {
-    font-size: 28px;
-    margin-bottom: 25px;
-    color: #333;
-}
-
-/* ================= NAVBAR ================= */
-
-nav {
-    background: linear-gradient(135deg, #6C63FF, #4B47D1);
+.navbar {
+    background: linear-gradient(90deg, #2193b0, #6dd5ed);
     padding: 15px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
 }
 
-nav a {
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 25px;
+}
+
+.nav-links a {
     color: white;
     text-decoration: none;
-    margin-right: 20px;
     font-weight: 500;
 }
 
-nav a:hover {
-    opacity: 0.8;
+.hero {
+    background: linear-gradient(to right, #4facfe, #00f2fe);
+    padding: 80px 20px;
+    text-align: center;
+    color: white;
+    border-radius: 15px;
 }
 
-/* ================= CARDS ================= */
+.btn {
+    background: white;
+    color: #2193b0;
+    padding: 10px 20px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: bold;
+}
 
-.card-grid {
+.section-title {
+    text-align: center;
+    margin-top: 40px;
+}
+
+.cards {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 20px;
+    padding: 20px;
 }
 
 .card {
     background: white;
     padding: 20px;
-    border-radius: 14px;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.08);
-    transition: 0.3s ease;
+    border-radius: 15px;
+    box-shadow: 0px 6px 15px rgba(0,0,0,0.08);
+    transition: 0.3s;
 }
 
 .card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-5px);
 }
 
-/* ================= CARD HEADER ================= */
-
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.card-header h3 {
-    margin: 0;
-    font-size: 18px;
-}
-
-/* ================= STATUS BADGES ================= */
-
-.status {
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 13px;
+.price {
     font-weight: bold;
+    color: #2193b0;
+}
+
+.view-btn {
+    display: inline-block;
+    margin-top: 10px;
+    background: #2193b0;
     color: white;
+    padding: 6px 15px;
+    border-radius: 20px;
+    text-decoration: none;
 }
 
-.status.pending {
-    background-color: #f0ad4e;
+.flash {
+    background: #d4edda;
+    padding: 10px;
+    margin: 20px;
+    border-radius: 8px;
 }
 
-.status.accepted {
-    background-color: #28a745;
-}
-
-.status.rejected {
-    background-color: #dc3545;
-}
-
-/* ================= CARD BODY ================= */
-
-.offer-text {
-    color: #555;
-    font-size: 15px;
-}
-
-/* ================= EMPTY STATE ================= */
-
-.empty-state {
+.form-container {
+    max-width: 600px;
+    margin: 40px auto;
     background: white;
     padding: 30px;
-    border-radius: 14px;
-    text-align: center;
-    color: #777;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.05);
+    border-radius: 15px;
+    box-shadow: 0px 8px 20px rgba(0,0,0,0.08);
 }
 
-/* ================= BUTTONS ================= */
-
-button {
-    padding: 8px 14px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    font-weight: 500;
+.modern-form .form-group {
+    margin-bottom: 20px;
 }
 
-button:hover {
-    opacity: 0.9;
-}
-
-/* ================= FORMS ================= */
-
-input, textarea {
+.modern-form input,
+.modern-form textarea,
+.modern-form select {
     width: 100%;
-    padding: 8px;
-    margin-bottom: 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-}
-
-/* ================= FLASH ================= */
-
-p[style] {
-    background: #ffe5e5;
     padding: 10px;
     border-radius: 8px;
+    border: 1px solid #ddd;
 }
 
-/* ================= CONTACT PAGE ================= */
-
-.contact-container {
-    display: flex;
-    justify-content: center;
-    margin-top: 40px;
+.primary-btn {
+    background: linear-gradient(90deg, #2193b0, #6dd5ed);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 25px;
+    border: none;
+    cursor: pointer;
 }
 
-.contact-card {
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    padding: 20px;
+}
+
+.category-card {
+    background: white;
+    padding: 20px;
+    text-align: center;
+    border-radius: 12px;
+    box-shadow: 0px 4px 10px rgba(0,0,0,0.08);
+    font-weight: bold;
+}
+
+.barter-btn {
+    background: #ff9800;
+    padding: 10px 25px;
+    border-radius: 25px;
+    color: white;
+    text-decoration: none;
+}
+
+.barter-tag {
+    background: #ff9800;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 10px;
+}
+
+.delete-btn {
+    background: red;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 15px;
+    text-decoration: none;
+}
+
+.center {
+    text-align: center;
+    margin: 40px 0;
+}
+
+.detail-card {
     background: white;
     padding: 40px;
-    width: 450px;
-    border-radius: 16px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-}
-
-.contact-card h2 {
-    margin-top: 0;
-}
-
-.contact-card input,
-.contact-card textarea {
-    width: 100%;
-    margin-bottom: 15px;
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-}
-
-.contact-card button {
-    background: #6C63FF;
-    color: white;
-    padding: 10px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    width: 100%;
-}
-
-.contact-card button:hover {
-    opacity: 0.9;
-}
-
-/* ================= BARTER PAGE ================= */
-
-.bartered-label {
-    color: #28a745;
-    font-weight: bold;
-    margin-top: 10px;
+    border-radius: 15px;
+    box-shadow: 0px 8px 20px rgba(0,0,0,0.1);
+    max-width: 600px;
+    margin: 40px auto;
 }

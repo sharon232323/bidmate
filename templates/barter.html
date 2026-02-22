@@ -1,30 +1,16 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="page-container">
-    <h2 class="page-title">Successfully Bartered Items</h2>
+<h2 class="section-title">Barter Zone</h2>
 
-    {% if items %}
-        <div class="card-grid">
-            {% for item in items %}
-                <div class="card">
-
-                    <img src="{{ url_for('static', filename='uploads/' + item.image) }}" width="100%">
-
-                    <div class="card-body">
-                        <h3>{{ item.title }}</h3>
-                        <p>{{ item.description }}</p>
-                        <p class="bartered-label">✔ Bartered</p>
-                    </div>
-
-                </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="empty-state">
-            <p>No bartered items yet.</p>
-        </div>
-    {% endif %}
+<div class="cards">
+    {% for item in barter_items %}
+    <div class="card">
+        <h3>{{ item.title }}</h3>
+        <p>{{ item.description }}</p>
+        <span class="barter-tag">Barter Only</span>
+    </div>
+    {% endfor %}
 </div>
 
 {% endblock %}

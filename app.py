@@ -1,290 +1,114 @@
+from flask import Flask, render_template, request, redirect, url_for, flash
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash, session
-from werkzeug.utils import secure_filename
-import psycopg2
-from psycopg2.extras import RealDictCursor
 
 app = Flask(__name__)
-app.secret_key = "supersecretkey"
+app.secret_key = "super_secret_bidmate"
 
-UPLOAD_FOLDER = "static/uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+db_path = os.path.join(BASE_DIR, "bidmate.db")
 
-DATABASE_URL = os.environ.get("DATABASE_URL")
+app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+db = SQLAlchemy(app)
 
-# ================= DATABASE CONNECTION =================
+# ------------------ MODEL ------------------
 
-def get_db_connection():
-    conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
-    return conn
+class Item(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    category = db.Column(db.String(100), nullable=False)
+    is_barter = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-
-# ================= AUTO CREATE TABLES =================
-
-def create_tables():
-    conn = get_db_connection()
-    cur = conn.cursor()
-
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        username VARCHAR(100) UNIQUE NOT NULL,
-        email VARCHAR(100) UNIQUE NOT NULL,
-        password VARCHAR(200) NOT NULL
-    );
-    """)
-
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS items (
-        id SERIAL PRIMARY KEY,
-        title VARCHAR(200),
-        description TEXT,
-        image VARCHAR(200),
-        owner_id INTEGER REFERENCES users(id),
-        status VARCHAR(50) DEFAULT 'Available'
-    );
-    """)
-
-    conn.commit()
-    cur.close()
-    conn.close()
-
-
-with app.app_context():
-    create_tables()
-
-
-# ================= HOME =================
+# ------------------ ROUTES ------------------
 
 @app.route("/")
 def home():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM items ORDER BY id DESC")
-    items = cur.fetchall()
-    cur.close()
-    conn.close()
+    items = Item.query.filter_by(is_barter=False).order_by(Item.created_at.desc()).all()
+    return render_template("index.html", items=items)
 
-    return render_template("dashboard.html", items=items)
-
-
-# ================= REGISTER =================
-
-@app.route("/register", methods=["GET", "POST"])
-def register():
-    if request.method == "POST":
-        username = request.form["username"]
-        email = request.form["email"]
-        password = request.form["password"]
-
-        conn = get_db_connection()
-        cur = conn.cursor()
-
-        try:
-            cur.execute(
-                "INSERT INTO users (username, email, password) VALUES (%s, %s, %s)",
-                (username, email, password)
-            )
-            conn.commit()
-            flash("Registered successfully! Please login.")
-            return redirect(url_for("login"))
-        except:
-            flash("Username or Email already exists.")
-        finally:
-            cur.close()
-            conn.close()
-
-    return render_template("register.html")
-
-
-# ================= LOGIN =================
-
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        email = request.form["email"]
-        password = request.form["password"]
-
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute(
-            "SELECT * FROM users WHERE email=%s AND password=%s",
-            (email, password)
-        )
-        user = cur.fetchone()
-        cur.close()
-        conn.close()
-
-        if user:
-            session["user_id"] = user["id"]
-            session["username"] = user["username"]
-            flash("Login successful!")
-            return redirect(url_for("home"))
-        else:
-            flash("Invalid credentials")
-
-    return render_template("login.html")
-
-
-# ================= LOGOUT =================
-
-@app.route("/logout")
-def logout():
-    session.clear()
-    flash("Logged out successfully")
-    return redirect(url_for("home"))
-
-
-# ================= ADD ITEM =================
-
-@app.route("/add_item", methods=["GET", "POST"])
-def add_item():
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
+@app.route("/sell", methods=["GET", "POST"])
+def sell():
     if request.method == "POST":
         title = request.form["title"]
         description = request.form["description"]
-        image_file = request.files["image"]
+        price = float(request.form["price"])
+        category = request.form["category"]
+        barter = True if request.form.get("barter") else False
 
-        filename = secure_filename(image_file.filename)
-        image_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-        image_file.save(image_path)
-
-        conn = get_db_connection()
-        cur = conn.cursor()
-
-        cur.execute(
-            "INSERT INTO items (title, description, image, owner_id) VALUES (%s, %s, %s, %s)",
-            (title, description, filename, session["user_id"])
+        new_item = Item(
+            title=title,
+            description=description,
+            price=price,
+            category=category,
+            is_barter=barter
         )
 
-        conn.commit()
-        cur.close()
-        conn.close()
+        db.session.add(new_item)
+        db.session.commit()
 
-        flash("Item added successfully!")
-        return redirect(url_for("home"))
+        flash("Item listed successfully!")
+        return redirect(url_for("my_listings"))
 
-    return render_template("add_item.html")
+    return render_template("sell.html")
 
-
-# ================= ITEM DETAIL =================
-
-@app.route("/item/<int:item_id>")
-def item_detail(item_id):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM items WHERE id=%s", (item_id,))
-    item = cur.fetchone()
-    cur.close()
-    conn.close()
-
-    return render_template("item_detail.html", item=item)
-
-
-# ================= MY LISTINGS =================
-
-@app.route("/my_listings")
-def my_listings():
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute(
-        "SELECT * FROM items WHERE owner_id=%s ORDER BY id DESC",
-        (session["user_id"],)
-    )
-    items = cur.fetchall()
-    cur.close()
-    conn.close()
-
-    return render_template("my_listings.html", items=items)
-
-
-# ================= DELETE ITEM =================
-
-@app.route("/delete_item/<int:item_id>")
+@app.route("/delete/<int:item_id>")
 def delete_item(item_id):
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
-    conn = get_db_connection()
-    cur = conn.cursor()
-
-    cur.execute(
-        "DELETE FROM items WHERE id=%s AND owner_id=%s",
-        (item_id, session["user_id"])
-    )
-
-    conn.commit()
-    cur.close()
-    conn.close()
-
-    flash("Item deleted successfully.")
+    item = Item.query.get_or_404(item_id)
+    db.session.delete(item)
+    db.session.commit()
+    flash("Item deleted successfully!")
     return redirect(url_for("my_listings"))
 
+@app.route("/categories")
+def categories():
+    categories_list = [
+        "Books and notes",
+        "Hostel essentials",
+        "Electronic and gadget",
+        "Arts and craft",
+        "Project components",
+        "Fashion and accessories",
+        "Furniture and miscellaneous"
+    ]
+    items = Item.query.filter_by(is_barter=False).all()
+    barter_items = Item.query.filter_by(is_barter=True).all()
 
-# ================= BARTER =================
-
-@app.route("/barter/<int:item_id>")
-def barter_item(item_id):
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
-    conn = get_db_connection()
-    cur = conn.cursor()
-
-    cur.execute(
-        "UPDATE items SET status='Bartered' WHERE id=%s",
-        (item_id,)
-    )
-
-    conn.commit()
-    cur.close()
-    conn.close()
-
-    flash("Item marked as Bartered!")
-    return redirect(url_for("home"))
-
+    return render_template("categories.html",
+                           categories=categories_list,
+                           items=items,
+                           barter_items=barter_items)
 
 @app.route("/barter")
-def barter_page():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM items WHERE status='Bartered'")
-    items = cur.fetchall()
-    cur.close()
-    conn.close()
-
-    return render_template("barter.html", items=items)
-
-
-# ================= PROFILE =================
-
-@app.route("/profile")
-def profile():
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
-    return render_template("profile.html")
-
-
-# ================= CONTACT =================
+def barter():
+    barter_items = Item.query.filter_by(is_barter=True).all()
+    return render_template("barter.html", barter_items=barter_items)
 
 @app.route("/contact", methods=["GET", "POST"])
 def contact():
     if request.method == "POST":
         flash("Message sent successfully!")
         return redirect(url_for("contact"))
-
     return render_template("contact.html")
 
+@app.route("/my_listings")
+def my_listings():
+    items = Item.query.order_by(Item.created_at.desc()).all()
+    return render_template("my_listings.html", items=items)
 
-# ================= RUN =================
+@app.route("/item/<int:item_id>")
+def item_detail(item_id):
+    item = Item.query.get_or_404(item_id)
+    return render_template("item_detail.html", item=item)
+
+# ------------------ INIT ------------------
 
 if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)

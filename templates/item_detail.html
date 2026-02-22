@@ -1,42 +1,16 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="item-detail-container">
+<div class="detail-card">
+    <h2>{{ item.title }}</h2>
+    <p><strong>Category:</strong> {{ item.category }}</p>
+    <p>{{ item.description }}</p>
 
-    <div class="item-image">
-        <img src="{{ url_for('static', filename='uploads/' + item.image) }}">
-    </div>
-
-    <div class="item-info">
-        <h2>{{ item.title }}</h2>
-        <p class="owner">Listed by: {{ item.owner_email }}</p>
-
-        <p class="description">
-            {{ item.description }}
-        </p>
-
-        <p class="status">
-            Status: 
-            <span class="
-                {% if item.status == 'Available' %}
-                    available
-                {% else %}
-                    bartered
-                {% endif %}
-            ">
-                {{ item.status }}
-            </span>
-        </p>
-
-        {% if session.get("user") and session.get("user") != item.owner_email and item.status == "Available" %}
-        <form method="POST" action="/make_offer/{{ item.id }}">
-            <textarea name="offer_text" placeholder="Write your offer..." required></textarea>
-            <button type="submit">Send Offer</button>
-        </form>
-        {% endif %}
-
-    </div>
-
+    {% if item.is_barter %}
+        <span class="barter-tag">Barter Item</span>
+    {% else %}
+        <h3 class="price">₹ {{ item.price }}</h3>
+    {% endif %}
 </div>
 
 {% endblock %}

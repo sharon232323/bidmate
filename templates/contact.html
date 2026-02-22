@@ -1,24 +1,32 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="contact-container">
-    <div class="contact-card">
+<div class="form-container">
+    <h2>Contact BidMate</h2>
 
-        <h2>Contact Us</h2>
-        <p>Have questions or feedback? Send us a message.</p>
+    <form method="POST" class="modern-form">
 
-        <form method="POST">
+        <div class="form-group">
+            <label>Your Name</label>
+            <input type="text" name="name" required>
+        </div>
 
-            <input type="text" name="name" placeholder="Your Name" required>
+        <div class="form-group">
+            <label>Year & Department</label>
+            <input type="text" name="year_department" required>
+        </div>
 
-            <input type="email" name="email" placeholder="Your Email" required>
+        <div class="form-group">
+            <label>Reason for Contact</label>
+            <textarea name="reason" rows="4" required></textarea>
+        </div>
 
-            <textarea name="message" rows="5" placeholder="Your Message" required></textarea>
+        <button type="submit" class="primary-btn">Send Message</button>
+    </form>
 
-            <button type="submit">Send Message</button>
-
-        </form>
-
+    <div class="contact-email">
+        <p>Official Email:</p>
+        <strong>bidmate.support@gmail.com</strong>
     </div>
 </div>
 
