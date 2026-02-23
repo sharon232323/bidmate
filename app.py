@@ -29,6 +29,17 @@ class User(db.Model):
     is_approved = db.Column(db.Boolean, default=False)
     id_card = db.Column(db.String(200))
 
+# -----------------------------
+# ITEM MODEL
+# -----------------------------
+class Item(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200))
+    description = db.Column(db.Text)
+    price = db.Column(db.Float)
+    image = db.Column(db.String(200))
+    category = db.Column(db.String(100))
+    seller_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 # -----------------------------
 # HOME
@@ -164,6 +175,62 @@ def approve(user_id):
 
     return redirect("/admin")
 
+@app.route("/my_listings")
+def my_listings():
+    if "user_id" not in session:
+        return redirect("/login")
+
+    items = Item.query.filter_by(seller_id=session["user_id"]).all()
+    return render_template("my_listings.html", items=items)
+
+@app.route("/categories")
+def categories():
+    items = Item.query.all()
+    return render_template("categories.html", items=items)
+
+@app.route("/item/<int:item_id>")
+def item_detail(item_id):
+    item = Item.query.get(item_id)
+    return render_template("item_detail.html", item=item)
+
+@app.route("/barter")
+def barter():
+    return render_template("barter.html")
+
+@app.route("/contact")
+def contact():
+    return render_template("contact.html")
+
+@app.route("/sell", methods=["GET", "POST"])
+def sell():
+    if "user_id" not in session:
+        return redirect("/login")
+
+    if request.method == "POST":
+        title = request.form["title"]
+        description = request.form["description"]
+        price = request.form["price"]
+        category = request.form["category"]
+        image_file = request.files["image"]
+
+        filename = secure_filename(image_file.filename)
+        image_file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+
+        new_item = Item(
+            title=title,
+            description=description,
+            price=price,
+            category=category,
+            image=filename,
+            seller_id=session["user_id"]
+        )
+
+        db.session.add(new_item)
+        db.session.commit()
+
+        return redirect("/my_listings")
+
+    return render_template("sell.html")
 
 # -----------------------------
 # LOGOUT

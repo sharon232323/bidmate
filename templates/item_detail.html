@@ -1,22 +1,14 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="detail-card">
-    <h2>{{ item.title }}</h2>
-    <p><strong>Category:</strong> {{ item.category }}</p>
-    <p>{{ item.description }}</p>
+<h2>{{ item.title }}</h2>
 
-    {% if item.is_barter %}
-        <span class="barter-tag">Barter Item</span>
-    {% else %}
-        <h3 class="price">₹ {{ item.price }}</h3>
-    {% endif %}
-    <h3>Current Bid: ₹ {{ item.current_bid }}</h3>
+<img src="{{ url_for('static', filename='uploads/' + item.image) }}" width="250">
 
-<form method="POST" action="/bid/{{ item.id }}">
-    <input type="number" step="0.01" name="bid_amount" required>
-    <button type="submit" class="primary-btn">Place Bid</button>
-</form>
-</div>
+<p>{{ item.description }}</p>
+<p>Price: ₹ {{ item.price }}</p>
+<p>Category: {{ item.category }}</p>
+
+<a href="/categories">Back</a>
 
 {% endblock %}

@@ -1,31 +1,16 @@
 {% extends "base.html" %}
 {% block content %}
+<h2>All Categories</h2>
 
-<h2 class="section-title">Browse Categories</h2>
-
-<div class="category-grid">
-    {% for cat in categories %}
-        <div class="category-card">
-            {{ cat }}
-        </div>
-    {% endfor %}
-</div>
-
-<h2 class="section-title">Available Items</h2>
-
-<div class="cards">
-    {% for item in items %}
-    <div class="card">
+{% for item in items %}
+    <div>
         <h3>{{ item.title }}</h3>
-        <p>{{ item.description[:80] }}...</p>
-        <span class="price">₹ {{ item.price }}</span>
-        <a href="/item/{{ item.id }}" class="view-btn">View</a>
+        <img src="{{ url_for('static', filename='uploads/' + item.image) }}" width="150">
+        <p>₹ {{ item.price }}</p>
+        <p>Category: {{ item.category }}</p>
+        <a href="/item/{{ item.id }}">View</a>
     </div>
-    {% endfor %}
-</div>
-
-<div class="center">
-    <a href="/barter" class="barter-btn">View Barter Zone</a>
-</div>
+    <hr>
+{% endfor %}
 
 {% endblock %}

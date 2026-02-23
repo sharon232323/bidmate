@@ -1,25 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
+<h2>My Listings</h2>
 
-<h2 class="section-title">My Listings</h2>
+{% for item in items %}
+    <h3>{{ item.title }}</h3>
+    <img src="{{ url_for('static', filename='uploads/' + item.image) }}" width="150">
+    <p>₹ {{ item.price }}</p>
+    <a href="/item/{{ item.id }}">View Details</a>
+    <hr>
+{% else %}
+    <p>No items listed yet.</p>
+{% endfor %}
 
-<div class="cards">
-    {% for item in items %}
-    <div class="card">
-        <h3>{{ item.title }}</h3>
-        <p>{{ item.description }}</p>
-        <span class="price">₹ {{ item.price }}</span>
-
-        <div class="card-actions">
-            <a href="/item/{{ item.id }}" class="view-btn">View</a>
-            <a href="/delete/{{ item.id }}" 
-               class="delete-btn"
-               onclick="return confirmDelete()">
-               Delete
-            </a>
-        </div>
-    </div>
-    {% endfor %}
-</div>
+<a href="/sell">Add New Item</a>
 
 {% endblock %}

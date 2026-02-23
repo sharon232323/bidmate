@@ -1,52 +1,22 @@
 {% extends "base.html" %}
 {% block content %}
+<h2>Sell Item</h2>
 
-<div class="form-container">
-    <h2>List Your Item</h2>
-    <form method="POST" enctype="multipart/form-data" class="modern-form"></form>
+<form method="POST" enctype="multipart/form-data">
+    Title: <input type="text" name="title" required><br><br>
+    Description:<br>
+    <textarea name="description" required></textarea><br><br>
+    Price: <input type="number" name="price" required><br><br>
+    Category:
+    <select name="category">
+        <option>Books</option>
+        <option>Notes</option>
+        <option>Gadgets</option>
+        <option>Hostel Items</option>
+    </select><br><br>
+    Image: <input type="file" name="image" required><br><br>
 
-    <form method="POST" class="modern-form">
-
-        <div class="form-group">
-            <label>Item Title</label>
-            <input type="text" name="title" required>
-        </div>
-
-        <div class="form-group">
-            <label>Description</label>
-            <textarea name="description" rows="4" required></textarea>
-        </div>
-
-        <div class="form-group">
-            <label>Price (₹)</label>
-            <input type="number" step="0.01" name="price" required>
-        </div>
-
-        <div class="form-group">
-            <label>Category</label>
-            <select name="category" required>
-                <option>Books and notes</option>
-                <option>Hostel essentials</option>
-                <option>Electronic and gadget</option>
-                <option>Arts and craft</option>
-                <option>Project components</option>
-                <option>Fashion and accessories</option>
-                <option>Furniture and miscellaneous</option>
-            </select>
-        </div>
-
-        <div class="form-check">
-            <input type="checkbox" name="barter">
-            <label>Mark as Barter Item</label>
-        </div>
-
-        <div class="form-group">
-    <label>Upload Image</label>
-    <input type="file" name="image" required>
-</div>
-
-        <button type="submit" class="primary-btn">List Item</button>
-    </form>
-</div>
+    <button type="submit">Post Item</button>
+</form>
 
 {% endblock %}
