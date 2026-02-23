@@ -11,6 +11,20 @@
 
     {% include "navbar.html" %}
 
+    <div class="navbar">
+    <div>
+        <a href="/">BidMate</a>
+    </div>
+
+    <div>
+        <a href="/">Home</a>
+        <a href="/sell">Sell</a>
+        <a href="/categories">Categories</a>
+        <a href="/contact">Contact</a>
+        <span id="darkToggle" class="toggle-switch">🌙</span>
+    </div>
+</div>
+
     <div class="container fade-in">
         {% with messages = get_flashed_messages() %}
             {% if messages %}
