@@ -1,250 +1,159 @@
 import os
-from flask import Flask, render_template, request, redirect, session, url_for, flash
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, render_template, redirect, url_for, request, flash, jsonify
+from flask_login import login_user, logout_user, login_required, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 
+from config import Config
+from extensions import db, login_manager
+from models import User, Item, Bid
+
 app = Flask(__name__)
-app.secret_key = "bidmate_secret_key"
+app.config.from_object(Config)
 
-# Database Config
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///bidmate.db"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["UPLOAD_FOLDER"] = "static/uploads"
+db.init_app(app)
+login_manager.init_app(app)
 
-db = SQLAlchemy(app)
+with app.app_context():
+    db.create_all()
 
-# FIXED ADMIN EMAIL
-ADMIN_EMAIL = "thanusreecse2023@gmail.com"
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
-# -----------------------------
-# DATABASE MODEL
-# -----------------------------
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100))
-    email = db.Column(db.String(100), unique=True)
-    password = db.Column(db.String(100))
-    role = db.Column(db.String(20), default="buyer")
-    is_admin = db.Column(db.Boolean, default=False)
-    is_approved = db.Column(db.Boolean, default=False)
-    id_card = db.Column(db.String(200))
-
-# -----------------------------
-# ITEM MODEL
-# -----------------------------
-class Item(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200))
-    description = db.Column(db.Text)
-    price = db.Column(db.Float)
-    image = db.Column(db.String(200))
-    category = db.Column(db.String(100))
-    seller_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-
-# -----------------------------
-# HOME
-# -----------------------------
-@app.route("/")
-def home():
-    return render_template("home.html")
-
-
-# -----------------------------
-# SIGNUP
-# -----------------------------
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
-
         name = request.form["name"]
         email = request.form["email"]
-        password = request.form["password"]
+        password = generate_password_hash(request.form["password"])
+        year = request.form["year"]
+        department = request.form["department"]
         id_card_file = request.files["id_card"]
 
         filename = secure_filename(id_card_file.filename)
         id_card_file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
 
-        is_admin = True if email == ADMIN_EMAIL else False
-        is_approved = True if email == ADMIN_EMAIL else False
-
-        new_user = User(
+        user = User(
             name=name,
             email=email,
             password=password,
-            id_card=filename,
-            is_admin=is_admin,
-            is_approved=is_approved
+            year=year,
+            department=department,
+            id_card=filename
         )
 
-        db.session.add(new_user)
+        # YOU = SUPER ADMIN
+        if email == app.config["SUPER_ADMIN_EMAIL"]:
+            user.is_admin = True
+            user.is_approved = True
+
+        db.session.add(user)
         db.session.commit()
 
-        flash("Signup successful! Wait for admin approval.")
-        return redirect("/login")
+        flash("Signup successful. Await admin approval.")
+        return redirect(url_for("login"))
 
     return render_template("signup.html")
 
-
-# -----------------------------
-# LOGIN
-# -----------------------------
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         email = request.form["email"]
         password = request.form["password"]
 
-        user = User.query.filter_by(email=email, password=password).first()
+        user = User.query.filter_by(email=email).first()
 
-        if user:
+        if user and check_password_hash(user.password, password):
             if not user.is_approved:
-                flash("Waiting for Admin Approval.")
-                return redirect("/login")
+                flash("Account awaiting admin approval.")
+                return redirect(url_for("login"))
 
-            session["user_id"] = user.id
-            session["user_name"] = user.name
-            session["user_role"] = user.role
-            session["is_admin"] = user.is_admin
+            login_user(user)
+            return redirect(url_for("home"))
 
-            if user.is_admin:
-                return redirect("/admin")
-
-            return redirect("/profile")
-        else:
-            flash("Invalid credentials")
+        flash("Invalid credentials")
 
     return render_template("login.html")
 
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        email = request.form["email"]
+        password = request.form["password"]
 
-# -----------------------------
-# PROFILE
-# -----------------------------
-@app.route("/profile")
-def profile():
-    if "user_id" not in session:
-        return redirect("/login")
+        user = User.query.filter_by(email=email).first()
 
-    user = User.query.get(session["user_id"])
-    return render_template("profile.html", user=user)
+        if user and check_password_hash(user.password, password):
+            if not user.is_approved:
+                flash("Account awaiting admin approval.")
+                return redirect(url_for("login"))
 
+            login_user(user)
+            return redirect(url_for("home"))
 
-# -----------------------------
-# ROLE SWITCH
-# -----------------------------
-@app.route("/switch_role")
-def switch_role():
-    if "user_id" not in session:
-        return redirect("/login")
+        flash("Invalid credentials")
 
-    user = User.query.get(session["user_id"])
+    return render_template("login.html")
 
-    if user.role == "buyer":
-        user.role = "seller"
-    else:
-        user.role = "buyer"
-
-    db.session.commit()
-    session["user_role"] = user.role
-
-    return redirect("/profile")
-
-
-# -----------------------------
-# ADMIN DASHBOARD
-# -----------------------------
 @app.route("/admin")
-def admin():
-    if "is_admin" not in session or not session["is_admin"]:
-        return redirect("/")
+@login_required
+def admin_dashboard():
+    if not current_user.is_admin:
+        return redirect(url_for("home"))
 
-    users = User.query.filter_by(is_approved=False).all()
-    return render_template("admin.html", users=users)
+    pending_users = User.query.filter_by(is_approved=False).all()
+    items = Item.query.all()
 
+    return render_template("admin_dashboard.html",
+                           pending_users=pending_users,
+                           items=items)
 
-# -----------------------------
-# APPROVE USER
-# -----------------------------
 @app.route("/approve/<int:user_id>")
-def approve(user_id):
-    if "is_admin" not in session or not session["is_admin"]:
-        return redirect("/")
+@login_required
+def approve_user(user_id):
+    if not current_user.is_admin:
+        return redirect(url_for("home"))
 
     user = User.query.get(user_id)
     user.is_approved = True
     db.session.commit()
 
-    return redirect("/admin")
+    return redirect(url_for("admin_dashboard"))
 
-@app.route("/my_listings")
-def my_listings():
-    if "user_id" not in session:
-        return redirect("/login")
+@app.route("/profile")
+@login_required
+def profile():
+    return render_template("profile.html")
 
-    items = Item.query.filter_by(seller_id=session["user_id"]).all()
-    return render_template("my_listings.html", items=items)
+@app.route("/switch_role")
+@login_required
+def switch_role():
+    if current_user.role == "buyer":
+        current_user.role = "seller"
+    else:
+        current_user.role = "buyer"
+
+    db.session.commit()
+    return redirect(url_for("profile"))
+
+@app.route("/")
+def home():
+    items = Item.query.order_by(Item.created_at.desc()).all()
+    return render_template("home.html", items=items)
+
+@app.route("/delete_item/<int:item_id>")
+@login_required
+def delete_item(item_id):
+    item = Item.query.get(item_id)
+
+    if item.seller_id == current_user.id or current_user.is_admin:
+        db.session.delete(item)
+        db.session.commit()
+
+    return redirect(url_for("sell"))
 
 @app.route("/categories")
 def categories():
     items = Item.query.all()
     return render_template("categories.html", items=items)
-
-@app.route("/item/<int:item_id>")
-def item_detail(item_id):
-    item = Item.query.get(item_id)
-    return render_template("item_detail.html", item=item)
-
-@app.route("/barter")
-def barter():
-    return render_template("barter.html")
-
-@app.route("/contact")
-def contact():
-    return render_template("contact.html")
-
-@app.route("/sell", methods=["GET", "POST"])
-def sell():
-    if "user_id" not in session:
-        return redirect("/login")
-
-    if request.method == "POST":
-        title = request.form["title"]
-        description = request.form["description"]
-        price = request.form["price"]
-        category = request.form["category"]
-        image_file = request.files["image"]
-
-        filename = secure_filename(image_file.filename)
-        image_file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
-
-        new_item = Item(
-            title=title,
-            description=description,
-            price=price,
-            category=category,
-            image=filename,
-            seller_id=session["user_id"]
-        )
-
-        db.session.add(new_item)
-        db.session.commit()
-
-        return redirect("/my_listings")
-
-    return render_template("sell.html")
-
-# -----------------------------
-# LOGOUT
-# -----------------------------
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect("/")
-
-
-# -----------------------------
-# RUN
-# -----------------------------
-if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
-    app.run(debug=True)

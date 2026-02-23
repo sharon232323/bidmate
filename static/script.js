@@ -1,19 +1,15 @@
-function confirmDelete() {
-    return confirm("Are you sure you want to delete this item?");
+function toggleMode() {
+    document.body.classList.toggle("dark");
+    document.body.classList.toggle("light");
 }
-const searchInput = document.getElementById("searchInput");
 
-if (searchInput) {
-    searchInput.addEventListener("keyup", function () {
-        let filter = searchInput.value.toLowerCase();
-        let cards = document.querySelectorAll(".card");
+// Real-time search filter
+function searchItems() {
+    let input = document.getElementById("searchBar").value.toLowerCase();
+    let cards = document.getElementsByClassName("item-card");
 
-        cards.forEach(card => {
-            let text = card.innerText.toLowerCase();
-            card.style.display = text.includes(filter) ? "block" : "none";
-        });
-    });
-}
-function toggleDarkMode() {
-    document.body.classList.toggle("dark-mode");
+    for (let card of cards) {
+        let title = card.getAttribute("data-title");
+        card.style.display = title.includes(input) ? "block" : "none";
+    }
 }

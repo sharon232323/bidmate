@@ -1,22 +1,39 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Sell Item</h2>
+
+<h2>Sell Your Item</h2>
 
 <form method="POST" enctype="multipart/form-data">
-    Title: <input type="text" name="title" required><br><br>
-    Description:<br>
-    <textarea name="description" required></textarea><br><br>
-    Price: <input type="number" name="price" required><br><br>
-    Category:
-    <select name="category">
-        <option>Books</option>
-        <option>Notes</option>
-        <option>Gadgets</option>
-        <option>Hostel Items</option>
-    </select><br><br>
-    Image: <input type="file" name="image" required><br><br>
+    <input name="title" placeholder="Title" required>
+    <textarea name="description" placeholder="Description" required></textarea>
+    <input name="price" type="number" placeholder="Price" required>
 
+    <select name="category">
+        <option>Books and notes</option>
+        <option>Hostel essentials</option>
+        <option>Electronic and gadget</option>
+        <option>Arts and craft</option>
+        <option>Project components</option>
+        <option>Fashion and accessories</option>
+        <option>Furniture and miscellaneous</option>
+    </select>
+
+    <label>
+        <input type="checkbox" name="barter"> Available for Barter
+    </label>
+
+    <input type="file" name="image" required>
     <button type="submit">Post Item</button>
 </form>
+
+<h3>Your Listings</h3>
+
+{% for item in current_user.items %}
+<div class="card">
+    <h4>{{ item.title }}</h4>
+    <p>₹ {{ item.price }}</p>
+    <a href="/delete_item/{{ item.id }}"><button>Delete</button></a>
+</div>
+{% endfor %}
 
 {% endblock %}

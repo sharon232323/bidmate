@@ -1,212 +1,98 @@
-body {
+* {
     margin: 0;
+    padding: 0;
+    box-sizing: border-box;
     font-family: 'Segoe UI', sans-serif;
-    background: #f4f6fa;
+}
+
+body.light {
+    background: linear-gradient(135deg, #e0f7fa, #ffffff);
+    color: #111;
+}
+
+body.dark {
+    background: linear-gradient(135deg, #111, #1c1c1c);
+    color: white;
+}
+
+.container {
+    padding: 40px;
 }
 
 .navbar {
-    background: linear-gradient(90deg, #2193b0, #6dd5ed);
-    padding: 15px 40px;
     display: flex;
     justify-content: space-between;
+    padding: 15px 40px;
     align-items: center;
-    color: white;
 }
 
-.nav-links {
-    list-style: none;
-    display: flex;
-    gap: 25px;
+.glass {
+    backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    margin: 20px;
 }
 
 .nav-links a {
-    color: white;
+    margin: 0 10px;
     text-decoration: none;
     font-weight: 500;
 }
 
-.hero {
-    background: linear-gradient(to right, #4facfe, #00f2fe);
-    padding: 80px 20px;
-    text-align: center;
-    color: white;
-    border-radius: 15px;
+.nav-links a:hover {
+    color: #00bcd4;
 }
 
-.btn {
-    background: white;
-    color: #2193b0;
-    padding: 10px 20px;
-    border-radius: 30px;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-.section-title {
-    text-align: center;
-    margin-top: 40px;
-}
-
-.cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    padding: 20px;
+.mode-btn {
+    border: none;
+    background: transparent;
+    font-size: 20px;
+    cursor: pointer;
 }
 
 .card {
     background: rgba(255,255,255,0.25);
-    backdrop-filter: blur(15px);
+    backdrop-filter: blur(10px);
     border-radius: 20px;
-    border: 1px solid rgba(255,255,255,0.2);
-    transition: 0.4s ease;
-    
-}
-
-.card {
-    animation: fadeIn 0.6s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    padding: 20px;
+    margin: 15px;
+    transition: 0.3s ease;
 }
 
 .card:hover {
     transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
 
-.price {
-    font-weight: bold;
-    color: #2193b0;
+.item-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
 }
 
-.view-btn {
-    display: inline-block;
-    margin-top: 10px;
-    background: #2193b0;
-    color: white;
-    padding: 6px 15px;
-    border-radius: 20px;
-    text-decoration: none;
-}
-
-.flash {
-    background: #d4edda;
+input, select, textarea, button {
     padding: 10px;
-    margin: 20px;
-    border-radius: 8px;
-}
-
-.form-container {
-    max-width: 600px;
-    margin: 40px auto;
-    background: white;
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0px 8px 20px rgba(0,0,0,0.08);
-}
-
-.modern-form .form-group {
-    margin-bottom: 20px;
-}
-
-.modern-form input,
-.modern-form textarea,
-.modern-form select {
+    margin: 10px 0;
     width: 100%;
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
+    border-radius: 10px;
+    border: none;
 }
 
-.primary-btn {
-    background: linear-gradient(90deg, #2193b0, #6dd5ed);
+button {
+    background: #00bcd4;
     color: white;
-    padding: 10px 20px;
-    border-radius: 25px;
-    border: none;
     cursor: pointer;
 }
 
-.category-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    padding: 20px;
+button:hover {
+    background: #0097a7;
 }
 
-.category-card {
-    background: white;
-    padding: 20px;
-    text-align: center;
-    border-radius: 12px;
-    box-shadow: 0px 4px 10px rgba(0,0,0,0.08);
-    font-weight: bold;
+.fade-in {
+    animation: fade 0.6s ease-in;
 }
 
-.barter-btn {
-    background: #ff9800;
-    padding: 10px 25px;
-    border-radius: 25px;
-    color: white;
-    text-decoration: none;
-}
-
-.barter-tag {
-    background: #ff9800;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 10px;
-}
-
-.delete-btn {
-    background: red;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 15px;
-    text-decoration: none;
-}
-
-.center {
-    text-align: center;
-    margin: 40px 0;
-}
-
-.detail-card {
-    background: white;
-    padding: 40px;
-    border-radius: 15px;
-    box-shadow: 0px 8px 20px rgba(0,0,0,0.1);
-    max-width: 600px;
-    margin: 40px auto;
-}
-
-.card-img {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-    border-radius: 12px;
-    margin-bottom: 10px;
-}
-
-.search-bar {
-    width: 50%;
-    padding: 10px;
-    margin: 20px auto;
-    display: block;
-    border-radius: 20px;
-    border: 1px solid #ccc;
-}
-
-.dark-mode {
-    background: #121212;
-    color: white;
-}
-
-.dark-mode .card,
-.dark-mode .form-container {
-    background: rgba(255,255,255,0.05);
-    backdrop-filter: blur(10px);
-    color: white;
+@keyframes fade {
+    from {opacity:0;}
+    to {opacity:1;}
 }
