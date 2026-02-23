@@ -2,48 +2,32 @@
 <html>
 <head>
     <title>BidMate</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
-<nav class="navbar">
-    <div class="logo">BidMate</div>
-    <ul class="nav-links">
-        <li><a href="/">Home</a></li>
-        <li><a href="/sell">Sell</a></li>
-        <li><a href="/categories">Categories</a></li>
-        <li><a href="/contact">Contact</a></li>
-        <button onclick="toggleDarkMode()" class="dark-btn">🌙</button>
-        {% if session.get('user_id') %}
-    <li><a href="/switch_role">Switch Role ({{ session['user_role'] }})</a></li>
-    <li><a href="/logout">Logout</a></li>
-{% else %}
-    <li><a href="/login">Login</a></li>
-    <li><a href="/signup">Signup</a></li>
-{% endif %}
-{% if session.get('user_id') and session.get('user_role') %}
-    {% if User.query.get(session['user_id']).is_admin %}
-        <li><a href="/admin">Admin</a></li>
+<nav>
+    <a href="/">Home</a>
+    {% if session.get('user_id') %}
+        <a href="/profile">Profile</a>
+        <a href="/logout">Logout</a>
+    {% else %}
+        <a href="/login">Login</a>
+        <a href="/signup">Signup</a>
     {% endif %}
-{% endif %}
-    </ul>
 </nav>
 
-<div class="container">
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <div class="flash">
-                {% for message in messages %}
-                    {{ message }}
-                {% endfor %}
-            </div>
-        {% endif %}
-    {% endwith %}
+<hr>
 
-    {% block content %}{% endblock %}
-</div>
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    {% for message in messages %}
+      <p style="color:red;">{{ message }}</p>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
 
-<script src="{{ url_for('static', filename='script.js') }}"></script>
+{% block content %}{% endblock %}
+
 </body>
 </html>
