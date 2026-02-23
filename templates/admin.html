@@ -1,17 +1,23 @@
 {% extends "base.html" %}
 {% block content %}
+
 <h2>Admin Dashboard</h2>
 
-<h3>Pending Approvals</h3>
+<div class="card">
+    <p>Total Users: {{ total_users }}</p>
+    <p>Total Items: {{ total_items }}</p>
+    <p>Total Bids: {{ total_bids }}</p>
+</div>
 
-{% for user in users %}
+<h3>Pending Approvals</h3>
+{% for user in pending_users %}
+<div class="card">
     <p>{{ user.name }} - {{ user.email }}</p>
     <img src="{{ url_for('static', filename='uploads/' + user.id_card) }}" width="150">
-    <br>
-    <a href="/approve/{{ user.id }}">Approve</a>
-    <hr>
+    <a href="/approve/{{ user.id }}"><button>Approve</button></a>
+</div>
 {% else %}
-    <p>No pending users</p>
+<p>No pending approvals</p>
 {% endfor %}
 
 {% endblock %}
