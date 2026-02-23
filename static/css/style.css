@@ -1,4 +1,22 @@
 /* =========================
+   GLOBAL PREMIUM BACKGROUND
+========================= */
+
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(-45deg, #141E30, #243B55, #0f2027, #2c5364);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    color: #ffffff;
+}
+
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+/* =========================
    BIDMATE PREMIUM UI SYSTEM
 ========================= */
 
@@ -33,38 +51,44 @@ body.dark-mode {
    NAVBAR
 ========================= */
 
+/* =========================
+   PREMIUM NAVBAR
+========================= */
+
 .navbar {
-    backdrop-filter: blur(12px);
-    background: var(--glass-bg);
-    border-bottom: 1px solid var(--glass-border);
+    position: sticky;
+    top: 20px;
+    margin: 20px auto;
+    width: 90%;
     padding: 15px 40px;
+    border-radius: 20px;
+    backdrop-filter: blur(18px);
+    background: rgba(255, 255, 255, 0.1);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: var(--card-shadow);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    transition: 0.3s ease;
 }
 
-.navbar a {
-    color: white;
-    text-decoration: none;
+.nav-links a {
     margin: 0 15px;
+    text-decoration: none;
+    color: white;
     font-weight: 500;
-    position: relative;
-}
-
-.navbar a::after {
-    content: "";
-    width: 0%;
-    height: 2px;
-    background: white;
-    position: absolute;
-    bottom: -5px;
-    left: 0;
     transition: 0.3s;
 }
 
-.navbar a:hover::after {
-    width: 100%;
+.nav-links a:hover {
+    color: #ff6a00;
+}
+
+.logo a {
+    font-size: 22px;
+    font-weight: bold;
+    background: linear-gradient(90deg, #ff6a00, #ee0979);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 /* =========================
@@ -255,4 +279,48 @@ input, select, textarea {
 /* Dark Mode Support */
 body.dark-mode .category-card {
     background: rgba(0,0,0,0.3);
+}
+
+/* =========================
+   PREMIUM BUTTONS
+========================= */
+
+.btn-primary {
+    padding: 10px 20px;
+    border-radius: 50px;
+    background: linear-gradient(135deg, #ff6a00, #ee0979);
+    border: none;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+}
+
+/* =========================
+   TOAST NOTIFICATION
+========================= */
+
+.toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: linear-gradient(135deg, #ff6a00, #ee0979);
+    padding: 15px 25px;
+    border-radius: 10px;
+    color: white;
+    opacity: 0;
+    pointer-events: none;
+    transition: 0.4s ease;
+}
+
+.toast.show {
+    opacity: 1;
+    pointer-events: auto;
 }
