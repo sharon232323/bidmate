@@ -1,43 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>BidMate</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <!-- CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <!-- JS -->
     <script defer src="{{ url_for('static', filename='js/main.js') }}"></script>
 </head>
-<body class="light">
 
-    {% include "navbar.html" %}
+<body>
 
-    <div class="navbar">
-    <div>
-        <a href="/">BidMate</a>
-    </div>
+    <!-- NAVBAR (ONLY HERE) -->
+    <nav class="navbar">
+        <div class="logo">
+            <a href="/">BidMate</a>
+        </div>
 
-    <div>
-        <a href="/">Home</a>
-        <a href="/sell">Sell</a>
-        <a href="/categories">Categories</a>
-        <a href="/contact">Contact</a>
-        <span id="darkToggle" class="toggle-switch">🌙</span>
-    </div>
-</div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/sell">Sell</a>
+            <a href="/categories">Categories</a>
+            <a href="/contact">Contact</a>
+            <span id="darkToggle" class="toggle-switch">🌙</span>
+        </div>
+    </nav>
 
-    <div class="container fade-in">
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="flash">
-                    {% for msg in messages %}
-                        <p>{{ msg }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
-
-        {% block content %}{% endblock %}
-    </div>
+    <!-- PAGE CONTENT -->
+    {% block content %}{% endblock %}
 
 </body>
 </html>
