@@ -37,8 +37,19 @@
     <div class="bg-blur"></div>
 
     <!-- Navbar -->
-    {% include 'navbar.html' %}
+    <form
+    action="{{ url_for('search') }}"
+    method="GET"
+    class="search-form"
+>
 
+    <input
+        type="text"
+        name="q"
+        placeholder="Search items..."
+    >
+
+</form>
     <!-- Flash Messages -->
     <div class="flash-wrapper">
 

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="edit-page">
+
+    <div class="sell-form-box">
+
+        <h1>Edit Item</h1>
+
+        <form method="POST">
+
+            <input
+                type="text"
+                name="title"
+                value="{{ item.title }}"
+                required
+            >
+
+            <textarea
+                name="description"
+                rows="5"
+                required
+            >{{ item.description }}</textarea>
+
+            <input
+                type="number"
+                name="price"
+                value="{{ item.price }}"
+                required
+            >
+
+            <select name="category">
+
+                <option value="Books">Books</option>
+
+                <option value="Electronics">Electronics</option>
+
+                <option value="Notes">Notes</option>
+
+                <option value="Hostel Items">Hostel Items</option>
+
+                <option value="Accessories">Accessories</option>
+
+            </select>
+
+            <input
+                type="text"
+                name="image"
+                value="{{ item.image }}"
+            >
+
+            <div class="checkbox-box">
+
+                <input
+                    type="checkbox"
+                    name="is_barter"
+
+                    {% if item.is_barter %}
+                    checked
+                    {% endif %}
+                >
+
+                <label>
+                    Available for Barter
+                </label>
+
+            </div>
+
+            <button type="submit">
+                Save Changes
+            </button>
+
+        </form>
+
+    </div>
+
+</section>
+
+{% endblock %}

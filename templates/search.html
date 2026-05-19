@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="search-page">
+
+    <h1>
+        Search Results
+    </h1>
+
+    {% if query %}
+    <p class="search-query">
+        Results for "{{ query }}"
+    </p>
+    {% endif %}
+
+    <div class="items-grid">
+
+        {% for item in items %}
+
+        <a
+            href="{{ url_for('item_detail', item_id=item.id) }}"
+            class="item-card-link"
+        >
+
+            <div class="item-card">
+
+                <img
+                    src="{{ item.image if item.image else 'https://via.placeholder.com/400' }}"
+                >
+
+                <div class="item-info">
+
+                    <h3>{{ item.title }}</h3>
+
+                    <p>{{ item.category }}</p>
+
+                    <h2>₹{{ item.price }}</h2>
+
+                </div>
+
+            </div>
+
+        </a>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+{% endblock %}

@@ -438,3 +438,55 @@ body{
     }
 
 }
+/* SEARCH */
+
+.search-page{
+    padding:80px 8%;
+}
+
+.search-query{
+    margin:20px 0;
+    color:#cbd5e1;
+}
+
+/* EDIT PAGE */
+
+.edit-page{
+    padding:80px 8%;
+    display:flex;
+    justify-content:center;
+}
+
+.edit-page .sell-form-box{
+    width:100%;
+    max-width:700px;
+}
+
+/* PROFILE ACTIONS */
+
+.profile-actions{
+    display:flex;
+    gap:15px;
+    margin-top:15px;
+}
+
+.profile-actions a{
+    text-decoration:none;
+    color:white;
+    background:#1e293b;
+    padding:10px 14px;
+    border-radius:10px;
+    transition:0.3s;
+}
+
+.profile-actions a:hover{
+    background:#3b82f6;
+}
+.search-form input{
+    padding:10px 16px;
+    border:none;
+    border-radius:12px;
+    background:rgba(255,255,255,0.08);
+    color:white;
+    width:220px;
+}

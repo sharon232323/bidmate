@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="category-page">
+
+    <h1>
+        {{ category_name }}
+    </h1>
+
+    <div class="items-grid">
+
+        {% for item in items %}
+
+        <a
+            href="{{ url_for('item_detail', item_id=item.id) }}"
+            class="item-card-link"
+        >
+
+            <div class="item-card">
+
+                <img
+                    src="{{ item.image if item.image else 'https://via.placeholder.com/400' }}"
+                >
+
+                <div class="item-info">
+
+                    <h3>{{ item.title }}</h3>
+
+                    <p>{{ item.category }}</p>
+
+                    <h2>₹{{ item.price }}</h2>
+
+                </div>
+
+            </div>
+
+        </a>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+{% endblock %}

@@ -78,7 +78,25 @@ def home():
         'home.html',
         items=items
     )
+@app.route("/search")
+def search():
 
+    query = request.args.get("q")
+
+    if query:
+
+        items = Item.query.filter(
+            Item.title.ilike(f"%{query}%")
+        ).all()
+
+    else:
+        items = []
+
+    return render_template(
+        "search.html",
+        items=items,
+        query=query
+    )
 
 # =========================
 # REGISTER PAGE
@@ -292,6 +310,66 @@ def category_items(category_name):
         items=items
     )
 
+@app.route("/category/<category_name>")
+def category_items(category_name):
+
+    items = Item.query.filter_by(
+        category=category_name
+    ).all()
+
+    return render_template(
+        "category_items.html",
+        items=items,
+        category_name=category_name
+    )
+
+@app.route("/delete/<int:item_id>")
+@login_required
+def delete_item(item_id):
+
+    item = Item.query.get_or_404(item_id)
+
+    if item.seller_id != current_user.id:
+        flash("Unauthorized access")
+        return redirect(url_for("home"))
+
+    db.session.delete(item)
+    db.session.commit()
+
+    flash("Item deleted successfully")
+
+    return redirect(url_for("profile"))
+
+@app.route("/edit/<int:item_id>", methods=["GET", "POST"])
+@login_required
+def edit_item(item_id):
+
+    item = Item.query.get_or_404(item_id)
+
+    if item.seller_id != current_user.id:
+        flash("Unauthorized access")
+        return redirect(url_for("home"))
+
+    if request.method == "POST":
+
+        item.title = request.form["title"]
+        item.description = request.form["description"]
+        item.price = int(request.form["price"])
+        item.category = request.form["category"]
+        item.image = request.form["image"]
+
+        item.is_barter = True if request.form.get("is_barter") else False
+
+        db.session.commit()
+
+        flash("Item updated successfully")
+
+        return redirect(url_for("profile"))
+
+    return render_template(
+        "edit_item.html",
+        item=item
+    )
 
 # =========================
 # PROFILE
