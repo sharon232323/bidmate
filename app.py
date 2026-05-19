@@ -1,300 +1,417 @@
-import os
 from flask import Flask, render_template, redirect, url_for, request, flash
-from flask_login import login_user, logout_user, login_required, current_user
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import (
+    LoginManager,
+    UserMixin,
+    login_user,
+    logout_user,
+    login_required,
+    current_user
+)
 from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.utils import secure_filename
+from datetime import datetime
+import os
 
-from config import Config
-from extensions import db, login_manager
-from models import User, Item, Bid, Contact
+# =========================
+# APP CONFIGURATION
+# =========================
 
 app = Flask(__name__)
-app.config.from_object(Config)
 
-db.init_app(app)
+app.config['SECRET_KEY'] = 'bidmate_secret_key'
+
+# SQLite Database (works locally + Render)
+basedir = os.path.abspath(os.path.dirname(__file__))
+
+app.config['SQLALCHEMY_DATABASE_URI'] = \
+    'sqlite:///' + os.path.join(basedir, 'database.db')
+
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# =========================
+# DATABASE
+# =========================
+
+db = SQLAlchemy(app)
+
+# =========================
+# LOGIN MANAGER
+# =========================
+
+login_manager = LoginManager()
+
 login_manager.init_app(app)
 
-# Create database
+login_manager.login_view = 'login'
+
+# =========================
+# USER MODEL
+# =========================
+
+class User(UserMixin, db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    username = db.Column(
+        db.String(100),
+        unique=True,
+        nullable=False
+    )
+
+    email = db.Column(
+        db.String(150),
+        unique=True,
+        nullable=False
+    )
+
+    password = db.Column(
+        db.String(200),
+        nullable=False
+    )
+
+    items = db.relationship(
+        'Item',
+        backref='seller',
+        lazy=True
+    )
+
+# =========================
+# ITEM MODEL
+# =========================
+
+class Item(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    title = db.Column(
+        db.String(200),
+        nullable=False
+    )
+
+    description = db.Column(
+        db.Text,
+        nullable=False
+    )
+
+    price = db.Column(
+        db.Float,
+        nullable=False
+    )
+
+    category = db.Column(
+        db.String(100),
+        nullable=False
+    )
+
+    image = db.Column(
+        db.String(300),
+        nullable=True
+    )
+
+    is_barter = db.Column(
+        db.Boolean,
+        default=False
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
+
+    seller_id = db.Column(
+        db.Integer,
+        db.ForeignKey('user.id'),
+        nullable=False
+    )
+
+# =========================
+# CREATE DATABASE
+# =========================
+
 with app.app_context():
     db.create_all()
+
+# =========================
+# LOGIN LOADER
+# =========================
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+# =========================
+# HOME PAGE
+# =========================
 
-# ==============================
-# HOME
-# ==============================
-@app.route("/")
+@app.route('/')
 def home():
-    items = Item.query.order_by(Item.created_at.desc()).all()
-    return render_template("home.html", items=items)
 
+    items = Item.query.order_by(
+        Item.created_at.desc()
+    ).all()
 
-# ==============================
-# SIGNUP
-# ==============================
-@app.route("/signup", methods=["GET", "POST"])
-def signup():
-    if request.method == "POST":
-        name = request.form["name"]
-        email = request.form["email"]
-        password = generate_password_hash(request.form["password"])
-        year = request.form["year"]
-        department = request.form["department"]
-        id_card_file = request.files["id_card"]
+    return render_template(
+        'home.html',
+        items=items
+    )
 
-        filename = secure_filename(id_card_file.filename)
-        id_card_file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+# =========================
+# REGISTER
+# =========================
 
-        user = User(
-            name=name,
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+
+    if request.method == 'POST':
+
+        username = request.form.get('username')
+
+        email = request.form.get('email')
+
+        password = request.form.get('password')
+
+        existing_user = User.query.filter_by(
+            email=email
+        ).first()
+
+        if existing_user:
+
+            flash('Email already exists!', 'danger')
+
+            return redirect(url_for('register'))
+
+        hashed_password = generate_password_hash(password)
+
+        new_user = User(
+            username=username,
             email=email,
-            password=password,
-            year=year,
-            department=department,
-            id_card=filename
+            password=hashed_password
         )
 
-        # YOU are super admin
-        if email == app.config["SUPER_ADMIN_EMAIL"]:
-            user.is_admin = True
-            user.is_approved = True
+        db.session.add(new_user)
 
-        db.session.add(user)
         db.session.commit()
 
-        flash("Signup successful! Await admin approval.")
-        return redirect(url_for("login"))
+        flash('Registration successful!', 'success')
 
-    return render_template("signup.html")
+        return redirect(url_for('login'))
 
+    return render_template('register.html')
 
-# ==============================
+# =========================
 # LOGIN
-# ==============================
-@app.route("/login", methods=["GET", "POST"])
+# =========================
+
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == "POST":
-        email = request.form["email"]
-        password = request.form["password"]
 
-        user = User.query.filter_by(email=email).first()
+    if request.method == 'POST':
 
-        if user and check_password_hash(user.password, password):
-            if not user.is_approved:
-                flash("Account awaiting admin approval.")
-                return redirect(url_for("login"))
+        email = request.form.get('email')
+
+        password = request.form.get('password')
+
+        user = User.query.filter_by(
+            email=email
+        ).first()
+
+        if user and check_password_hash(
+            user.password,
+            password
+        ):
 
             login_user(user)
-            return redirect(url_for("home"))
 
-        flash("Invalid credentials")
+            flash('Login successful!', 'success')
 
-    return render_template("login.html")
+            return redirect(url_for('home'))
 
+        else:
 
-# ==============================
+            flash('Invalid email or password!', 'danger')
+
+    return render_template('login.html')
+
+# =========================
 # LOGOUT
-# ==============================
-@app.route("/logout")
+# =========================
+
+@app.route('/logout')
 @login_required
 def logout():
+
     logout_user()
-    return redirect(url_for("home"))
 
+    flash('Logged out successfully!', 'info')
 
-# ==============================
-# PROFILE
-# ==============================
-@app.route("/profile")
-@login_required
-def profile():
-    return render_template("profile.html")
+    return redirect(url_for('home'))
 
-
-# ==============================
-# ROLE SWITCH
-# ==============================
-@app.route("/switch_role")
-@login_required
-def switch_role():
-    if current_user.role == "buyer":
-        current_user.role = "seller"
-    else:
-        current_user.role = "buyer"
-
-    db.session.commit()
-    return redirect(url_for("profile"))
-
-
-# ==============================
+# =========================
 # SELL ITEM
-# ==============================
-@app.route("/sell", methods=["GET", "POST"])
+# =========================
+
+@app.route('/sell', methods=['GET', 'POST'])
 @login_required
 def sell():
-    if request.method == "POST":
-        title = request.form["title"]
-        description = request.form["description"]
-        price = float(request.form["price"])
-        category = request.form["category"]
-        is_barter = True if request.form.get("barter") else False
-        image_file = request.files["image"]
 
-        filename = secure_filename(image_file.filename)
-        image_file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+    if request.method == 'POST':
 
-        item = Item(
+        title = request.form.get('title')
+
+        description = request.form.get('description')
+
+        price = request.form.get('price')
+
+        category = request.form.get('category')
+
+        image = request.form.get('image')
+
+        barter = request.form.get('is_barter')
+
+        new_item = Item(
             title=title,
             description=description,
-            price=price,
+            price=float(price),
             category=category,
-            image=filename,
-            is_barter=is_barter,
+            image=image,
+            is_barter=True if barter else False,
             seller_id=current_user.id
         )
 
-        db.session.add(item)
+        db.session.add(new_item)
+
         db.session.commit()
 
-        flash("Item listed successfully!")
-        return redirect(url_for("sell"))
+        flash('Item listed successfully!', 'success')
 
-    return render_template("sell.html")
+        return redirect(url_for('home'))
 
+    return render_template('sell.html')
 
-# ==============================
+# =========================
+# ITEM DETAILS
+# =========================
+
+@app.route('/item/<int:item_id>')
+def item_detail(item_id):
+
+    item = Item.query.get_or_404(item_id)
+
+    return render_template(
+        'item_detail.html',
+        item=item
+    )
+
+# =========================
+# CATEGORIES PAGE
+# =========================
+
+@app.route('/categories')
+def categories():
+
+    categories = [
+        'Books',
+        'Electronics',
+        'Notes',
+        'Fashion',
+        'Hostel Items',
+        'Accessories',
+        'Gaming',
+        'Others'
+    ]
+
+    return render_template(
+        'categories.html',
+        categories=categories
+    )
+
+# =========================
+# CATEGORY ITEMS
+# =========================
+
+@app.route('/category/<string:category_name>')
+def category_items(category_name):
+
+    items = Item.query.filter_by(
+        category=category_name
+    ).all()
+
+    return render_template(
+        'category_items.html',
+        items=items,
+        category_name=category_name
+    )
+
+# =========================
+# PROFILE PAGE
+# =========================
+
+@app.route('/profile')
+@login_required
+def profile():
+
+    user_items = Item.query.filter_by(
+        seller_id=current_user.id
+    ).all()
+
+    return render_template(
+        'profile.html',
+        user_items=user_items
+    )
+
+# =========================
 # DELETE ITEM
-# ==============================
-@app.route("/delete_item/<int:item_id>")
+# =========================
+
+@app.route('/delete-item/<int:item_id>')
 @login_required
 def delete_item(item_id):
+
     item = Item.query.get_or_404(item_id)
 
-    if item.seller_id == current_user.id or current_user.is_admin:
-        db.session.delete(item)
-        db.session.commit()
+    if item.seller_id != current_user.id:
 
-    return redirect(url_for("sell"))
+        flash('Unauthorized action!', 'danger')
 
+        return redirect(url_for('home'))
 
-# ==============================
-# CATEGORIES
-# ==============================
-@app.route("/categories")
-def categories():
-    items = Item.query.all()
-    return render_template("categories.html", items=items)
+    db.session.delete(item)
 
-
-# ==============================
-# BARTER ZONE
-# ==============================
-@app.route("/barter")
-def barter():
-    items = Item.query.filter_by(is_barter=True).all()
-    return render_template("barter.html", items=items)
-
-
-# ==============================
-# ITEM DETAIL + BIDDING
-# ==============================
-@app.route("/item/<int:item_id>", methods=["GET", "POST"])
-def item_detail(item_id):
-    item = Item.query.get_or_404(item_id)
-    bids = Bid.query.filter_by(item_id=item_id).order_by(Bid.amount.desc()).all()
-
-    highest_bid = bids[0].amount if bids else item.price
-
-    if request.method == "POST":
-        if not current_user.is_authenticated:
-            return redirect(url_for("login"))
-
-        bid_amount = float(request.form["bid_amount"])
-
-        if bid_amount > highest_bid:
-            bid = Bid(
-                amount=bid_amount,
-                bidder_id=current_user.id,
-                item_id=item.id
-            )
-            db.session.add(bid)
-            db.session.commit()
-            flash("Bid placed successfully!")
-        else:
-            flash("Bid must be higher than current highest bid.")
-
-        return redirect(url_for("item_detail", item_id=item.id))
-
-    return render_template("item_detail.html",
-                           item=item,
-                           bids=bids,
-                           highest_bid=highest_bid)
-
-
-# ==============================
-# CONTACT
-# ==============================
-@app.route("/contact", methods=["GET", "POST"])
-def contact():
-    if request.method == "POST":
-        contact = Contact(
-            name=request.form["name"],
-            year=request.form["year"],
-            department=request.form["department"],
-            reason=request.form["reason"]
-        )
-
-        db.session.add(contact)
-        db.session.commit()
-
-        flash("Message sent successfully!")
-        return redirect(url_for("contact"))
-
-    return render_template("contact.html")
-
-
-# ==============================
-# ADMIN DASHBOARD
-# ==============================
-@app.route("/admin")
-@login_required
-def admin_dashboard():
-    if not current_user.is_admin:
-        return redirect(url_for("home"))
-
-    pending_users = User.query.filter_by(is_approved=False).all()
-    total_users = User.query.count()
-    total_items = Item.query.count()
-    total_bids = Bid.query.count()
-
-    return render_template("admin_dashboard.html",
-                           pending_users=pending_users,
-                           total_users=total_users,
-                           total_items=total_items,
-                           total_bids=total_bids)
-
-
-# ==============================
-# APPROVE USER
-# ==============================
-@app.route("/approve/<int:user_id>")
-@login_required
-def approve_user(user_id):
-    if not current_user.is_admin:
-        return redirect(url_for("home"))
-
-    user = User.query.get_or_404(user_id)
-    user.is_approved = True
     db.session.commit()
 
-    return redirect(url_for("admin_dashboard"))
+    flash('Item deleted successfully!', 'success')
 
+    return redirect(url_for('profile'))
 
-# ==============================
-# RUN
-# ==============================
-if __name__ == "__main__":
+# =========================
+# SEARCH
+# =========================
+
+@app.route('/search')
+def search():
+
+    query = request.args.get('q')
+
+    if query:
+
+        items = Item.query.filter(
+            Item.title.contains(query)
+        ).all()
+
+    else:
+
+        items = []
+
+    return render_template(
+        'search_results.html',
+        items=items,
+        query=query
+    )
+
+# =========================
+# RUN APP
+# =========================
+
+if __name__ == '__main__':
+
     app.run(debug=True)
