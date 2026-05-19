@@ -1,71 +1,45 @@
 <nav class="navbar">
-
-    <div class="logo">
-
-        <a href="{{ url_for('home') }}">
-
+    <div class="nav-left">
+        <a href="/" class="logo">
             BidMate
-
         </a>
-
     </div>
 
-    <ul class="nav-links">
+    <div class="nav-center">
+        <a href="/">Home</a>
+        <a href="/categories">Categories</a>
+        <a href="/sell">Sell</a>
+        <a href="/barter">Barter</a>
+        <a href="/contact">Contact</a>
+    </div>
 
-        <li>
-            <a href="{{ url_for('home') }}">
-                Home
-            </a>
-        </li>
-
-        <li>
-            <a href="{{ url_for('categories') }}">
-                Categories
-            </a>
-        </li>
-
-        <li>
-            <a href="{{ url_for('sell') }}">
-                Sell
-            </a>
-        </li>
-
-        <li>
-            <a href="{{ url_for('contact') }}">
-                Contact
-            </a>
-        </li>
+    <div class="nav-right">
 
         {% if current_user.is_authenticated %}
 
-            <li>
-                <a href="{{ url_for('profile') }}">
-                    Profile
-                </a>
-            </li>
+            <a href="/profile" class="profile-btn">
+                Profile
+            </a>
 
-            <li>
-                <a href="{{ url_for('logout') }}">
-                    Logout
-                </a>
-            </li>
+            <a href="/logout" class="logout-btn">
+                Logout
+            </a>
 
         {% else %}
 
-            <li>
-                <a href="{{ url_for('login') }}">
-                    Login
-                </a>
-            </li>
+            <a href="/login" class="login-btn">
+                Login
+            </a>
 
-            <li>
-                <a href="{{ url_for('signup') }}">
-                    Signup
-                </a>
-            </li>
+            <a href="/signup" class="signup-btn">
+                Sign Up
+            </a>
 
         {% endif %}
 
-    </ul>
+        <button id="themeToggle" class="theme-btn">
+            🌙
+        </button>
 
+    </div>
 </nav>
