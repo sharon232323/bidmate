@@ -1,36 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
     <title>BidMate</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
 
-    <!-- JS -->
-    <script defer src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
 </head>
-<div id="toast" class="toast">Success!</div>
+
 <body>
 
-    <!-- NAVBAR (ONLY HERE) -->
-    <nav class="navbar">
-        <div class="logo">
-            <a href="/">BidMate</a>
-        </div>
+    <!-- Background Blur -->
+    <div class="bg-blur"></div>
 
-        <div class="nav-links">
-            <a href="/">Home</a>
-            <a href="/sell">Sell</a>
-            <a href="/categories">Categories</a>
-            <a href="/contact">Contact</a>
-            <span id="darkToggle" class="toggle-switch">🌙</span>
-        </div>
-    </nav>
+    <!-- Navbar -->
+    {% include 'navbar.html' %}
 
-    <!-- PAGE CONTENT -->
-    {% block content %}{% endblock %}
+    <!-- Flash Messages -->
+    <div class="flash-wrapper">
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+
+            {% if messages %}
+
+                {% for category, message in messages %}
+
+                    <div class="flash-message {{ category }}">
+
+                        {{ message }}
+
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+        {% endwith %}
+
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-container">
+
+        {% block content %}
+
+        {% endblock %}
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+
+        <h3>BidMate</h3>
+
+        <p>
+            Student Marketplace for Auctions, Buying & Barter
+        </p>
+
+    </footer>
+
+    <!-- JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
 </body>
+
 </html>

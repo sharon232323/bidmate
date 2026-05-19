@@ -1,26 +1,32 @@
-from flask import Flask, render_template, redirect, url_for, request, flash
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, render_template, redirect, url_for
+from flask import request, flash
+
+from werkzeug.security import (
+    generate_password_hash,
+    check_password_hash
+)
+
 from flask_login import (
-    LoginManager,
-    UserMixin,
     login_user,
     logout_user,
     login_required,
     current_user
 )
-from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+
+from extensions import db, login_manager
+from models import User, Item
+
 import os
 
+
 # =========================
-# APP CONFIGURATION
+# APP CONFIG
 # =========================
 
 app = Flask(__name__)
 
-app.config['SECRET_KEY'] = 'bidmate_secret_key'
+app.config['SECRET_KEY'] = 'bidmate_super_secret'
 
-# SQLite Database (works locally + Render)
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 app.config['SQLALCHEMY_DATABASE_URI'] = \
@@ -28,108 +34,15 @@ app.config['SQLALCHEMY_DATABASE_URI'] = \
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# =========================
-# DATABASE
-# =========================
-
-db = SQLAlchemy(app)
 
 # =========================
-# LOGIN MANAGER
+# INITIALIZE EXTENSIONS
 # =========================
 
-login_manager = LoginManager()
+db.init_app(app)
 
 login_manager.init_app(app)
 
-login_manager.login_view = 'login'
-
-# =========================
-# USER MODEL
-# =========================
-
-class User(UserMixin, db.Model):
-
-    id = db.Column(db.Integer, primary_key=True)
-
-    username = db.Column(
-        db.String(100),
-        unique=True,
-        nullable=False
-    )
-
-    email = db.Column(
-        db.String(150),
-        unique=True,
-        nullable=False
-    )
-
-    password = db.Column(
-        db.String(200),
-        nullable=False
-    )
-
-    items = db.relationship(
-        'Item',
-        backref='seller',
-        lazy=True
-    )
-
-# =========================
-# ITEM MODEL
-# =========================
-
-class Item(db.Model):
-
-    id = db.Column(db.Integer, primary_key=True)
-
-    title = db.Column(
-        db.String(200),
-        nullable=False
-    )
-
-    description = db.Column(
-        db.Text,
-        nullable=False
-    )
-
-    price = db.Column(
-        db.Float,
-        nullable=False
-    )
-
-    category = db.Column(
-        db.String(100),
-        nullable=False
-    )
-
-    image = db.Column(
-        db.String(300),
-        nullable=True
-    )
-
-    is_barter = db.Column(
-        db.Boolean,
-        default=False
-    )
-
-    created_at = db.Column(
-        db.DateTime,
-        default=datetime.utcnow
-    )
-
-    seller_id = db.Column(
-        db.Integer,
-        db.ForeignKey('user.id'),
-        nullable=False
-    )
-
-# =========================
-# CREATE DATABASE
-# =========================
-
-with app.app_context():
-    db.create_all()
 
 # =========================
 # LOGIN LOADER
@@ -137,7 +50,18 @@ with app.app_context():
 
 @login_manager.user_loader
 def load_user(user_id):
+
     return User.query.get(int(user_id))
+
+
+# =========================
+# CREATE DATABASE
+# =========================
+
+with app.app_context():
+
+    db.create_all()
+
 
 # =========================
 # HOME PAGE
@@ -155,12 +79,13 @@ def home():
         items=items
     )
 
+
 # =========================
-# REGISTER
+# REGISTER PAGE
 # =========================
 
-@app.route('/register', methods=['GET', 'POST'])
-def register():
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
 
     if request.method == 'POST':
 
@@ -176,11 +101,16 @@ def register():
 
         if existing_user:
 
-            flash('Email already exists!', 'danger')
+            flash(
+                'Email already exists!',
+                'danger'
+            )
 
-            return redirect(url_for('register'))
+            return redirect(url_for('signup'))
 
-        hashed_password = generate_password_hash(password)
+        hashed_password = generate_password_hash(
+            password
+        )
 
         new_user = User(
             username=username,
@@ -192,14 +122,18 @@ def register():
 
         db.session.commit()
 
-        flash('Registration successful!', 'success')
+        flash(
+            'Account created successfully!',
+            'success'
+        )
 
         return redirect(url_for('login'))
 
-    return render_template('register.html')
+    return render_template('signup.html')
+
 
 # =========================
-# LOGIN
+# LOGIN PAGE
 # =========================
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -222,15 +156,22 @@ def login():
 
             login_user(user)
 
-            flash('Login successful!', 'success')
+            flash(
+                'Login successful!',
+                'success'
+            )
 
             return redirect(url_for('home'))
 
         else:
 
-            flash('Invalid email or password!', 'danger')
+            flash(
+                'Invalid email or password!',
+                'danger'
+            )
 
     return render_template('login.html')
+
 
 # =========================
 # LOGOUT
@@ -242,9 +183,13 @@ def logout():
 
     logout_user()
 
-    flash('Logged out successfully!', 'info')
+    flash(
+        'Logged out successfully!',
+        'info'
+    )
 
     return redirect(url_for('home'))
+
 
 # =========================
 # SELL ITEM
@@ -282,11 +227,15 @@ def sell():
 
         db.session.commit()
 
-        flash('Item listed successfully!', 'success')
+        flash(
+            'Item listed successfully!',
+            'success'
+        )
 
         return redirect(url_for('home'))
 
     return render_template('sell.html')
+
 
 # =========================
 # ITEM DETAILS
@@ -302,8 +251,9 @@ def item_detail(item_id):
         item=item
     )
 
+
 # =========================
-# CATEGORIES PAGE
+# CATEGORIES
 # =========================
 
 @app.route('/categories')
@@ -315,8 +265,8 @@ def categories():
         'Notes',
         'Fashion',
         'Hostel Items',
-        'Accessories',
         'Gaming',
+        'Accessories',
         'Others'
     ]
 
@@ -324,6 +274,7 @@ def categories():
         'categories.html',
         categories=categories
     )
+
 
 # =========================
 # CATEGORY ITEMS
@@ -337,13 +288,13 @@ def category_items(category_name):
     ).all()
 
     return render_template(
-        'category_items.html',
-        items=items,
-        category_name=category_name
+        'home.html',
+        items=items
     )
 
+
 # =========================
-# PROFILE PAGE
+# PROFILE
 # =========================
 
 @app.route('/profile')
@@ -359,6 +310,7 @@ def profile():
         user_items=user_items
     )
 
+
 # =========================
 # DELETE ITEM
 # =========================
@@ -371,7 +323,10 @@ def delete_item(item_id):
 
     if item.seller_id != current_user.id:
 
-        flash('Unauthorized action!', 'danger')
+        flash(
+            'Unauthorized action!',
+            'danger'
+        )
 
         return redirect(url_for('home'))
 
@@ -379,9 +334,13 @@ def delete_item(item_id):
 
     db.session.commit()
 
-    flash('Item deleted successfully!', 'success')
+    flash(
+        'Item deleted!',
+        'success'
+    )
 
     return redirect(url_for('profile'))
+
 
 # =========================
 # SEARCH
@@ -403,10 +362,18 @@ def search():
         items = []
 
     return render_template(
-        'search_results.html',
-        items=items,
-        query=query
+        'home.html',
+        items=items
     )
+
+# =========================
+# CONTACT PAGE
+# =========================
+
+@app.route('/contact')
+def contact():
+
+    return render_template('contact.html')
 
 # =========================
 # RUN APP

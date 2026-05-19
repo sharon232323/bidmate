@@ -1,18 +1,62 @@
 {% extends "base.html" %}
+
 {% block content %}
 
-<h2>Barter Zone</h2>
+<section class="barter-page">
 
-<div class="item-grid">
-{% for item in items %}
-<div class="card">
-    <h3>{{ item.title }}</h3>
-    <p>{{ item.description }}</p>
-    <a href="/item/{{ item.id }}"><button>View</button></a>
-</div>
-{% else %}
-<p>No barter items available.</p>
-{% endfor %}
-</div>
+    <div class="page-header">
+        <h1>Barter Exchange</h1>
+        <p>Exchange your unused items with fellow students.</p>
+    </div>
+
+    <div class="barter-container">
+
+        <div class="barter-card">
+            <div class="barter-image">
+                <img src="https://images.unsplash.com/photo-1517336714739-489689fd1ca8?q=80&w=1200" alt="">
+            </div>
+
+            <div class="barter-content">
+                <h2>Scientific Calculator</h2>
+
+                <div class="trade-box">
+                    Wants: Engineering Drawing Tools
+                </div>
+
+                <p>
+                    Casio scientific calculator in excellent condition.
+                </p>
+
+                <button class="trade-btn">
+                    Request Trade
+                </button>
+            </div>
+        </div>
+
+        <div class="barter-card">
+            <div class="barter-image">
+                <img src="https://images.unsplash.com/photo-1513258496099-48168024aec0?q=80&w=1200" alt="">
+            </div>
+
+            <div class="barter-content">
+                <h2>Study Chair</h2>
+
+                <div class="trade-box">
+                    Wants: Bluetooth Speaker
+                </div>
+
+                <p>
+                    Comfortable hostel study chair in good condition.
+                </p>
+
+                <button class="trade-btn">
+                    Request Trade
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+</section>
 
 {% endblock %}

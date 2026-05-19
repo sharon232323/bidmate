@@ -1,16 +1,54 @@
 {% extends "base.html" %}
+
 {% block content %}
 
-<h2>Contact BidMate</h2>
+<section class="contact-page">
 
-<form method="POST">
-    <input name="name" placeholder="Your Name" required>
-    <input name="year" placeholder="Year" required>
-    <input name="department" placeholder="Department" required>
-    <textarea name="reason" placeholder="Reason for contacting" required></textarea>
-    <button type="submit">Submit</button>
-</form>
+    <div class="contact-wrapper">
 
-<p>Email us directly at: support@bidmate.com</p>
+        <div class="contact-left">
+            <h1>Contact Us</h1>
+
+            <p>
+                Have questions, suggestions or issues?
+                Reach out to the BidMate team anytime.
+            </p>
+
+            <div class="contact-info">
+                <div class="info-box">
+                    📧 support@bidmate.com
+                </div>
+
+                <div class="info-box">
+                    📍 Chennai, India
+                </div>
+
+                <div class="info-box">
+                    📞 +91 9876543210
+                </div>
+            </div>
+        </div>
+
+        <div class="contact-right">
+
+            <form class="contact-form">
+
+                <input type="text" placeholder="Your Name">
+
+                <input type="email" placeholder="Your Email">
+
+                <textarea rows="6" placeholder="Your Message"></textarea>
+
+                <button type="submit">
+                    Send Message
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</section>
 
 {% endblock %}
