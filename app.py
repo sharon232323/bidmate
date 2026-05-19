@@ -298,18 +298,6 @@ def categories():
 # CATEGORY ITEMS
 # =========================
 
-@app.route('/category/<string:category_name>')
-def category_items(category_name):
-
-    items = Item.query.filter_by(
-        category=category_name
-    ).all()
-
-    return render_template(
-        'home.html',
-        items=items
-    )
-
 @app.route("/category/<category_name>")
 def category_items(category_name):
 
