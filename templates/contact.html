@@ -2,50 +2,42 @@
 
 {% block content %}
 
-<section class="contact-page">
+<section class="contact-container">
 
-    <div class="contact-wrapper">
+    <div class="contact-card">
 
-        <div class="contact-left">
-            <h1>Contact Us</h1>
+        <h1>Contact Us</h1>
 
-            <p>
-                Have questions, suggestions or issues?
-                Reach out to the BidMate team anytime.
-            </p>
+        <p>
+            Have questions, suggestions or partnership ideas?
+            Reach out to the BidMate team.
+        </p>
 
-            <div class="contact-info">
-                <div class="info-box">
-                    📧 support@bidmate.com
-                </div>
+        <form class="contact-form">
 
-                <div class="info-box">
-                    📍 Chennai, India
-                </div>
+            <input
+                type="text"
+                placeholder="Your Name"
+                required
+            >
 
-                <div class="info-box">
-                    📞 +91 9876543210
-                </div>
-            </div>
-        </div>
+            <input
+                type="email"
+                placeholder="Your Email"
+                required
+            >
 
-        <div class="contact-right">
+            <textarea
+                placeholder="Your Message"
+                rows="6"
+                required
+            ></textarea>
 
-            <form class="contact-form">
+            <button type="submit">
+                Send Message
+            </button>
 
-                <input type="text" placeholder="Your Name">
-
-                <input type="email" placeholder="Your Email">
-
-                <textarea rows="6" placeholder="Your Message"></textarea>
-
-                <button type="submit">
-                    Send Message
-                </button>
-
-            </form>
-
-        </div>
+        </form>
 
     </div>
 
