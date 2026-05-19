@@ -1,73 +1,142 @@
-from flask import Flask, render_template, redirect, url_for
-from flask import request, flash
-
-from werkzeug.security import (
-    generate_password_hash,
-    check_password_hash
-)
-
+from flask import Flask, render_template, request, redirect, url_for, flash
+from flask_sqlalchemy import SQLAlchemy
 from flask_login import (
+    LoginManager,
+    UserMixin,
     login_user,
     logout_user,
     login_required,
     current_user
 )
-
-from extensions import db, login_manager
-from models import User, Item
-
+from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 import os
 
-
-# =========================
+# ---------------------------------------------------
 # APP CONFIG
-# =========================
+# ---------------------------------------------------
 
 app = Flask(__name__)
 
-app.config['SECRET_KEY'] = 'bidmate_super_secret'
+app.config["SECRET_KEY"] = "bidmate_secret_key"
 
-basedir = os.path.abspath(os.path.dirname(__file__))
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
+    "DATABASE_URL",
+    "sqlite:///database.db"
+)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = \
-    'sqlite:///' + os.path.join(basedir, 'database.db')
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
 
+# ---------------------------------------------------
+# LOGIN MANAGER
+# ---------------------------------------------------
 
-# =========================
-# INITIALIZE EXTENSIONS
-# =========================
-
-db.init_app(app)
+login_manager = LoginManager()
 
 login_manager.init_app(app)
 
+login_manager.login_view = "login"
 
-# =========================
+# ---------------------------------------------------
+# MODELS
+# ---------------------------------------------------
+
+class User(UserMixin, db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    username = db.Column(
+        db.String(100),
+        unique=True,
+        nullable=False
+    )
+
+    email = db.Column(
+        db.String(150),
+        unique=True,
+        nullable=False
+    )
+
+    password = db.Column(
+        db.String(200),
+        nullable=False
+    )
+
+    items = db.relationship(
+        "Item",
+        backref="seller",
+        lazy=True
+    )
+
+
+class Item(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    title = db.Column(
+        db.String(200),
+        nullable=False
+    )
+
+    description = db.Column(
+        db.Text,
+        nullable=False
+    )
+
+    price = db.Column(
+        db.Integer,
+        nullable=False
+    )
+
+    category = db.Column(
+        db.String(100),
+        nullable=False
+    )
+
+    image = db.Column(
+        db.String(500),
+        nullable=True
+    )
+
+    is_barter = db.Column(
+        db.Boolean,
+        default=False
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
+
+    seller_id = db.Column(
+        db.Integer,
+        db.ForeignKey("user.id"),
+        nullable=False
+    )
+
+# ---------------------------------------------------
+# CREATE DATABASE
+# ---------------------------------------------------
+
+with app.app_context():
+    db.create_all()
+
+# ---------------------------------------------------
 # LOGIN LOADER
-# =========================
+# ---------------------------------------------------
 
 @login_manager.user_loader
 def load_user(user_id):
 
     return User.query.get(int(user_id))
 
+# ---------------------------------------------------
+# HOME
+# ---------------------------------------------------
 
-# =========================
-# CREATE DATABASE
-# =========================
-
-with app.app_context():
-
-    db.create_all()
-
-
-# =========================
-# HOME PAGE
-# =========================
-
-@app.route('/')
+@app.route("/")
 def home():
 
     items = Item.query.order_by(
@@ -75,93 +144,64 @@ def home():
     ).all()
 
     return render_template(
-        'home.html',
+        "home.html",
         items=items
     )
-@app.route("/search")
-def search():
 
-    query = request.args.get("q")
+# ---------------------------------------------------
+# REGISTER
+# ---------------------------------------------------
 
-    if query:
+@app.route("/register", methods=["GET", "POST"])
+def register():
 
-        items = Item.query.filter(
-            Item.title.ilike(f"%{query}%")
-        ).all()
+    if request.method == "POST":
 
-    else:
-        items = []
+        username = request.form["username"]
 
-    return render_template(
-        "search.html",
-        items=items,
-        query=query
-    )
+        email = request.form["email"]
 
-# =========================
-# REGISTER PAGE
-# =========================
+        password = generate_password_hash(
+            request.form["password"]
+        )
 
-@app.route('/signup', methods=['GET', 'POST'])
-def signup():
-
-    if request.method == 'POST':
-
-        username = request.form.get('username')
-
-        email = request.form.get('email')
-
-        password = request.form.get('password')
-
-        existing_user = User.query.filter_by(
-            email=email
+        existing_user = User.query.filter(
+            (User.username == username) |
+            (User.email == email)
         ).first()
 
         if existing_user:
 
-            flash(
-                'Email already exists!',
-                'danger'
-            )
-
-            return redirect(url_for('signup'))
-
-        hashed_password = generate_password_hash(
-            password
-        )
+            flash("User already exists")
+            return redirect(url_for("register"))
 
         new_user = User(
             username=username,
             email=email,
-            password=hashed_password
+            password=password
         )
 
         db.session.add(new_user)
-
         db.session.commit()
 
-        flash(
-            'Account created successfully!',
-            'success'
-        )
+        flash("Registration successful")
 
-        return redirect(url_for('login'))
+        return redirect(url_for("login"))
 
-    return render_template('signup.html')
+    return render_template("register.html")
 
+# ---------------------------------------------------
+# LOGIN
+# ---------------------------------------------------
 
-# =========================
-# LOGIN PAGE
-# =========================
-
-@app.route('/login', methods=['GET', 'POST'])
+@app.route("/login", methods=["GET", "POST"])
 def login():
 
-    if request.method == 'POST':
+    if request.method == "POST":
 
-        email = request.form.get('email')
+        email = request.form["email"]
 
-        password = request.form.get('password')
+        password = request.form["password"]
 
         user = User.query.filter_by(
             email=email
@@ -174,129 +214,133 @@ def login():
 
             login_user(user)
 
-            flash(
-                'Login successful!',
-                'success'
-            )
+            flash("Login successful")
 
-            return redirect(url_for('home'))
+            return redirect(url_for("home"))
 
         else:
 
-            flash(
-                'Invalid email or password!',
-                'danger'
-            )
+            flash("Invalid credentials")
 
-    return render_template('login.html')
+    return render_template("login.html")
 
-
-# =========================
+# ---------------------------------------------------
 # LOGOUT
-# =========================
+# ---------------------------------------------------
 
-@app.route('/logout')
+@app.route("/logout")
 @login_required
 def logout():
 
     logout_user()
 
-    flash(
-        'Logged out successfully!',
-        'info'
-    )
+    flash("Logged out successfully")
 
-    return redirect(url_for('home'))
+    return redirect(url_for("home"))
 
-
-# =========================
+# ---------------------------------------------------
 # SELL ITEM
-# =========================
+# ---------------------------------------------------
 
-@app.route('/sell', methods=['GET', 'POST'])
+@app.route("/sell", methods=["GET", "POST"])
 @login_required
 def sell():
 
-    if request.method == 'POST':
+    if request.method == "POST":
 
-        title = request.form.get('title')
+        title = request.form["title"]
 
-        description = request.form.get('description')
+        description = request.form["description"]
 
-        price = request.form.get('price')
+        price = request.form["price"]
 
-        category = request.form.get('category')
+        category = request.form["category"]
 
-        image = request.form.get('image')
+        image = request.form["image"]
 
-        barter = request.form.get('is_barter')
+        is_barter = True if request.form.get(
+            "is_barter"
+        ) else False
 
-        new_item = Item(
+        item = Item(
             title=title,
             description=description,
-            price=float(price),
+            price=price,
             category=category,
             image=image,
-            is_barter=True if barter else False,
+            is_barter=is_barter,
             seller_id=current_user.id
         )
 
-        db.session.add(new_item)
+        db.session.add(item)
 
         db.session.commit()
 
-        flash(
-            'Item listed successfully!',
-            'success'
-        )
+        flash("Item listed successfully")
 
-        return redirect(url_for('home'))
+        return redirect(url_for("home"))
 
-    return render_template('sell.html')
+    return render_template("sell.html")
 
+# ---------------------------------------------------
+# ITEM DETAIL
+# ---------------------------------------------------
 
-# =========================
-# ITEM DETAILS
-# =========================
-
-@app.route('/item/<int:item_id>')
+@app.route("/item/<int:item_id>")
 def item_detail(item_id):
 
     item = Item.query.get_or_404(item_id)
 
     return render_template(
-        'item_detail.html',
+        "item_detail.html",
         item=item
     )
 
+# ---------------------------------------------------
+# PROFILE
+# ---------------------------------------------------
 
-# =========================
-# CATEGORIES
-# =========================
+@app.route("/profile")
+@login_required
+def profile():
 
-@app.route('/categories')
-def categories():
-
-    categories = [
-        'Books',
-        'Electronics',
-        'Notes',
-        'Fashion',
-        'Hostel Items',
-        'Gaming',
-        'Accessories',
-        'Others'
-    ]
+    items = Item.query.filter_by(
+        seller_id=current_user.id
+    ).all()
 
     return render_template(
-        'categories.html',
-        categories=categories
+        "profile.html",
+        items=items
     )
 
+# ---------------------------------------------------
+# SEARCH
+# ---------------------------------------------------
 
-# =========================
-# CATEGORY ITEMS
-# =========================
+@app.route("/search")
+def search():
+
+    query = request.args.get("q")
+
+    if query:
+
+        items = Item.query.filter(
+            Item.title.ilike(f"%{query}%")
+        ).all()
+
+    else:
+
+        items = []
+
+    return render_template(
+        "search.html",
+        items=items,
+        query=query
+    )
+
+# ---------------------------------------------------
+# CATEGORY PAGE
+# ---------------------------------------------------
 
 @app.route("/category/<category_name>")
 def category_items(category_name):
@@ -311,42 +355,40 @@ def category_items(category_name):
         category_name=category_name
     )
 
-@app.route("/delete/<int:item_id>")
-@login_required
-def delete_item(item_id):
+# ---------------------------------------------------
+# EDIT ITEM
+# ---------------------------------------------------
 
-    item = Item.query.get_or_404(item_id)
-
-    if item.seller_id != current_user.id:
-        flash("Unauthorized access")
-        return redirect(url_for("home"))
-
-    db.session.delete(item)
-    db.session.commit()
-
-    flash("Item deleted successfully")
-
-    return redirect(url_for("profile"))
-
-@app.route("/edit/<int:item_id>", methods=["GET", "POST"])
+@app.route(
+    "/edit/<int:item_id>",
+    methods=["GET", "POST"]
+)
 @login_required
 def edit_item(item_id):
 
     item = Item.query.get_or_404(item_id)
 
     if item.seller_id != current_user.id:
+
         flash("Unauthorized access")
+
         return redirect(url_for("home"))
 
     if request.method == "POST":
 
         item.title = request.form["title"]
+
         item.description = request.form["description"]
-        item.price = int(request.form["price"])
+
+        item.price = request.form["price"]
+
         item.category = request.form["category"]
+
         item.image = request.form["image"]
 
-        item.is_barter = True if request.form.get("is_barter") else False
+        item.is_barter = True if request.form.get(
+            "is_barter"
+        ) else False
 
         db.session.commit()
 
@@ -359,29 +401,11 @@ def edit_item(item_id):
         item=item
     )
 
-# =========================
-# PROFILE
-# =========================
-
-@app.route('/profile')
-@login_required
-def profile():
-
-    user_items = Item.query.filter_by(
-        seller_id=current_user.id
-    ).all()
-
-    return render_template(
-        'profile.html',
-        user_items=user_items
-    )
-
-
-# =========================
+# ---------------------------------------------------
 # DELETE ITEM
-# =========================
+# ---------------------------------------------------
 
-@app.route('/delete-item/<int:item_id>')
+@app.route("/delete/<int:item_id>")
 @login_required
 def delete_item(item_id):
 
@@ -389,62 +413,40 @@ def delete_item(item_id):
 
     if item.seller_id != current_user.id:
 
-        flash(
-            'Unauthorized action!',
-            'danger'
-        )
+        flash("Unauthorized access")
 
-        return redirect(url_for('home'))
+        return redirect(url_for("home"))
 
     db.session.delete(item)
 
     db.session.commit()
 
-    flash(
-        'Item deleted!',
-        'success'
-    )
+    flash("Item deleted successfully")
 
-    return redirect(url_for('profile'))
+    return redirect(url_for("profile"))
 
+# ---------------------------------------------------
+# CONTACT
+# ---------------------------------------------------
 
-# =========================
-# SEARCH
-# =========================
-
-@app.route('/search')
-def search():
-
-    query = request.args.get('q')
-
-    if query:
-
-        items = Item.query.filter(
-            Item.title.contains(query)
-        ).all()
-
-    else:
-
-        items = []
-
-    return render_template(
-        'home.html',
-        items=items
-    )
-
-# =========================
-# CONTACT PAGE
-# =========================
-
-@app.route('/contact')
+@app.route("/contact")
 def contact():
 
-    return render_template('contact.html')
+    return render_template("contact.html")
 
-# =========================
+# ---------------------------------------------------
+# ABOUT
+# ---------------------------------------------------
+
+@app.route("/about")
+def about():
+
+    return render_template("about.html")
+
+# ---------------------------------------------------
 # RUN APP
-# =========================
+# ---------------------------------------------------
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     app.run(debug=True)
