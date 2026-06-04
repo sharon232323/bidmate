@@ -4,11 +4,28 @@
 
 <div class="hero">
 
-    <h1>Categories</h1>
+    <h1>Campus Auction Marketplace</h1>
 
     <p>
-        Browse items category-wise
+        Buy • Sell • Auction • Barter with Students
     </p>
+
+    <form action="/search" method="GET">
+
+        <div class="search-box">
+
+            <input
+            type="text"
+            name="query"
+            placeholder="Search items...">
+
+            <button class="btn">
+                Search
+            </button>
+
+        </div>
+
+    </form>
 
 </div>
 
@@ -29,22 +46,27 @@
 
             <h2>{{ item.title }}</h2>
 
-            <p>
-                {{ item.description[:100] }}
-            </p>
+            <p>{{ item.description[:100] }}</p>
 
             <div class="price">
                 ₹ {{ item.price }}
             </div>
 
+            {% if item.auction %}
+
+                <p>
+                    Highest Bid:
+                    ₹ {{ item.highest_bid }}
+                </p>
+
+            {% endif %}
+
             <br>
 
             <a href="/item/{{ item.id }}">
-
                 <button class="btn">
-                    View Item
+                    View Details
                 </button>
-
             </a>
 
         </div>

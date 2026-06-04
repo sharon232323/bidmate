@@ -1,73 +1,66 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
 {% block content %}
 
-<section class="barter-page">
+<div class="hero">
 
-    <div class="page-header">
-        <h1>Barter Exchange</h1>
-        <p>Exchange your unused items with fellow students.</p>
-    </div>
+    <h1>Barter Exchange</h1>
 
-    <div class="barter-container">
-
-        <div class="barter-card">
-            <div class="barter-image">
-                <img src="https://images.unsplash.com/photo-1517336714739-489689fd1ca8?q=80&w=1200" alt="">
-            </div>
-
-            <div class="barter-content">
-                <h2>Scientific Calculator</h2>
-
-                <div class="trade-box">
-                    Wants: Engineering Drawing Tools
-                </div>
-
-                <p>
-                    Casio scientific calculator in excellent condition.
-                </p>
-
-                <button class="trade-btn">
-                    Request Trade
-                </button>
-            </div>
-        </div>
-
-        <div class="barter-card">
-            <div class="barter-image">
-                <img src="https://images.unsplash.com/photo-1513258496099-48168024aec0?q=80&w=1200" alt="">
-            </div>
-
-            <div class="barter-content">
-                <h2>Study Chair</h2>
-
-                <div class="trade-box">
-                    Wants: Bluetooth Speaker
-                </div>
-
-                <p>
-                    Comfortable hostel study chair in good condition.
-                </p>
-
-                <button class="trade-btn">
-                    Request Trade
-                </button>
-            </div>
-        </div>
-
-    </div>
-
-</section>
-
-<div class="profile-actions">
-
-    <a href="{{ url_for('edit_item', item_id=item.id) }}">
-        Edit
-    </a>
-
-    <a href="{{ url_for('delete_item', item_id=item.id) }}">
-        Delete
-    </a>
+    <p>
+        Exchange items with students directly
+    </p>
 
 </div>
+
+<div class="items-container">
+
+    {% for item in items %}
+
+    <div class="item-card">
+
+        <img src="{{ url_for('static',
+        filename='uploads/' + item.image) }}">
+
+        <div class="item-content">
+
+            <span class="category">
+                {{ item.category }}
+            </span>
+
+            <h2>{{ item.title }}</h2>
+
+            <p>
+                {{ item.description[:120] }}
+            </p>
+
+            <br>
+
+            <a href="/item/{{ item.id }}">
+
+                <button class="btn">
+                    View Item
+                </button>
+
+            </a>
+
+        </div>
+
+    </div>
+
+    {% else %}
+
+    <div class="form-container">
+
+        <h1>No Barter Items Yet</h1>
+
+        <p>
+            Students have not added barter items yet.
+        </p>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
 {% endblock %}

@@ -1,52 +1,158 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+
 {% block content %}
 
-<h2>Sell Your Item</h2>
+<div class="hero">
 
-<form method="POST" enctype="multipart/form-data">
-    <input name="title" placeholder="Title" required>
-    <textarea name="description" placeholder="Description" required></textarea>
-    <input name="price" type="number" placeholder="Price" required>
+    <h1>Sell Your Item</h1>
 
-    <select name="category">
-        <option>Books and notes</option>
-        <option>Hostel essentials</option>
-        <option>Electronic and gadget</option>
-        <option>Arts and craft</option>
-        <option>Project components</option>
-        <option>Fashion and accessories</option>
-        <option>Furniture and miscellaneous</option>
-    </select>
+    <p>
+        Auction, Sell or Barter with students
+    </p>
 
-    <label>
-        <input type="checkbox" name="barter"> Available for Barter
-    </label>
-
-    <input type="file" name="image" required>
-    <button type="submit">Post Item</button>
-</form>
-
-<h3>Your Listings</h3>
-
-{% for item in current_user.items %}
-<div class="card">
-    <h4>{{ item.title }}</h4>
-    <p>₹ {{ item.price }}</p>
-    <a href="/delete_item/{{ item.id }}"><button>Delete</button></a>
 </div>
-<div class="item-grid">
-    {% for item in items %}
-    <div class="glass-card item-card fade-in">
-        <img src="{{ url_for('static', filename='uploads/' + item.image) }}">
-        <h3>{{ item.title }}</h3>
-        <p>{{ item.description }}</p>
-        <h4>₹ {{ item.price }}</h4>
-        {% if item.is_barter %}
-            <p>🔁 Barter Item</p>
-        {% endif %}
+
+<div class="items-container">
+
+    <div class="item-card">
+
+        <div class="item-content">
+
+            <h2>Browse Categories</h2>
+
+            <p>
+                Explore electronics, books,
+                notes, hostel items and more.
+            </p>
+
+            <br>
+
+            <a href="/categories">
+                <button class="btn">
+                    Open Categories
+                </button>
+            </a>
+
+        </div>
+
     </div>
-    {% endfor %}
+
+    <div class="item-card">
+
+        <div class="item-content">
+
+            <h2>Barter Exchange</h2>
+
+            <p>
+                Exchange your items with other
+                students without money.
+            </p>
+
+            <br>
+
+            <a href="/barter">
+                <button class="btn">
+                    Open Barter
+                </button>
+            </a>
+
+        </div>
+
+    </div>
+
 </div>
-{% endfor %}
+
+<div class="form-container">
+
+    <h1>Publish Item</h1>
+
+    <form method="POST"
+    enctype="multipart/form-data">
+
+        <div class="form-group">
+
+            <input
+            type="text"
+            name="title"
+            placeholder="Item Title"
+            required>
+
+        </div>
+
+        <div class="form-group">
+
+            <textarea
+            name="description"
+            placeholder="Item Description"></textarea>
+
+        </div>
+
+        <div class="form-group">
+
+            <select name="category">
+
+                <option>Books</option>
+                <option>Electronics</option>
+                <option>Notes</option>
+                <option>Hostel Items</option>
+                <option>Fashion</option>
+                <option>Sports</option>
+
+            </select>
+
+        </div>
+
+        <div class="form-group">
+
+            <input
+            type="number"
+            name="price"
+            placeholder="Price"
+            required>
+
+        </div>
+
+        <div class="form-group">
+
+            <input
+            type="file"
+            name="image"
+            required>
+
+        </div>
+
+        <div class="form-group">
+
+            <label>
+
+                <input type="checkbox"
+                name="auction">
+
+                Enable Auction
+
+            </label>
+
+        </div>
+
+        <div class="form-group">
+
+            <label>
+
+                <input type="checkbox"
+                name="barter">
+
+                Enable Barter
+
+            </label>
+
+        </div>
+
+        <button class="btn">
+            Publish Item
+        </button>
+
+    </form>
+
+</div>
 
 {% endblock %}

@@ -1,18 +1,40 @@
-from extensions import db
+from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from datetime import datetime
 
+db = SQLAlchemy()
+
+
+# =========================
+# USER MODEL
+# =========================
 
 class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
 
-    username = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=False)
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
 
-    profile_image = db.Column(
-        db.String(200),
-        default="default.png"
+    username = db.Column(
+        db.String(100),
+        unique=True,
+        nullable=False
+    )
+
+    email = db.Column(
+        db.String(120),
+        unique=True,
+        nullable=False
+    )
+
+    password = db.Column(
+        db.String(300),
+        nullable=False
+    )
+
+    college = db.Column(
+        db.String(200)
     )
 
     created_at = db.Column(
@@ -20,25 +42,33 @@ class User(UserMixin, db.Model):
         default=datetime.utcnow
     )
 
+    # relationship
+
     items = db.relationship(
-        "Item",
-        backref="owner",
+        'Item',
+        backref='owner',
         lazy=True
     )
 
 
+# =========================
+# ITEM MODEL
+# =========================
+
 class Item(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
 
-    title = db.Column(db.String(150), nullable=False)
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
 
-    description = db.Column(
-        db.Text,
+    title = db.Column(
+        db.String(200),
         nullable=False
     )
 
-    price = db.Column(
-        db.Float,
+    description = db.Column(
+        db.Text,
         nullable=False
     )
 
@@ -47,9 +77,29 @@ class Item(db.Model):
         nullable=False
     )
 
+    price = db.Column(
+        db.Integer,
+        nullable=False
+    )
+
     image = db.Column(
-        db.String(200),
-        default="default_item.jpg"
+        db.String(300),
+        nullable=False
+    )
+
+    auction = db.Column(
+        db.Boolean,
+        default=False
+    )
+
+    barter = db.Column(
+        db.Boolean,
+        default=False
+    )
+
+    highest_bid = db.Column(
+        db.Integer,
+        default=0
     )
 
     created_at = db.Column(
@@ -57,8 +107,9 @@ class Item(db.Model):
         default=datetime.utcnow
     )
 
+    # foreign key
+
     user_id = db.Column(
         db.Integer,
-        db.ForeignKey("user.id"),
-        nullable=False
+        db.ForeignKey('user.id')
     )

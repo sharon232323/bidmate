@@ -1,34 +1,84 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+
 {% block content %}
 
-<div class="card">
-    <img src="{{ url_for('static', filename='uploads/' + item.image) }}" width="100%">
-    <h2>{{ item.title }}</h2>
-    <p>{{ item.description }}</p>
+<div class="details-container">
 
-    <h3>Current Highest Bid: ₹ {{ highest_bid }}</h3>
+    <div>
 
-    {% if current_user.is_authenticated %}
-    <form method="POST">
-        <input type="number" name="bid_amount" placeholder="Enter your bid" required>
-        <button type="submit">Place Bid</button>
-    </form>
-    {% else %}
-    <p>Login to place a bid.</p>
-    {% endif %}
+        <img src="{{ url_for('static',
+        filename='uploads/' + item.image) }}">
 
-    <h4>Bid History</h4>
-    {% for bid in bids %}
-        <p>₹ {{ bid.amount }}</p>
-    {% else %}
-        <p>No bids yet.</p>
-    {% endfor %}
+    </div>
+
+    <div class="details-content">
+
+        <span class="category">
+            {{ item.category }}
+        </span>
+
+        <h1>{{ item.title }}</h1>
+
+        <p>
+            {{ item.description }}
+        </p>
+
+        <br>
+
+        <div class="price">
+            ₹ {{ item.price }}
+        </div>
+
+        <br>
+
+        {% if item.auction %}
+
+            <h3>
+                Highest Bid:
+                ₹ {{ item.highest_bid }}
+            </h3>
+
+            <br>
+
+            {% if current_user.is_authenticated %}
+
+            <form method="POST"
+            action="/bid/{{ item.id }}">
+
+                <div class="bid-box">
+
+                    <input
+                    type="number"
+                    name="bid_amount"
+                    placeholder="Enter Bid Amount"
+                    required>
+
+                    <button class="btn">
+                        Place Bid
+                    </button>
+
+                </div>
+
+            </form>
+
+            {% endif %}
+
+        {% endif %}
+
+        <br>
+
+        {% if item.barter %}
+
+            <div class="flash">
+
+                Available for Barter Exchange
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
 </div>
-
-<script>
-setTimeout(function(){
-    location.reload();
-}, 8000);  // refresh every 8 seconds
-</script>
 
 {% endblock %}
